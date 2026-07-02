@@ -33,15 +33,15 @@
       "fields": {
         "origin": {
           "name": "Origin",
-          "description": "An entity holding the origin location (person, device_tracker, zone, sensor, ...) or a {latitude, longitude} value."
+          "description": "An entity holding the origin location (person, device_tracker, zone, sensor, ...) or a latitude/longitude value."
         },
         "destination": {
           "name": "Destination",
-          "description": "An entity holding the destination location or a {latitude, longitude} value."
+          "description": "An entity holding the destination location or a latitude/longitude value."
         },
         "waypoints": {
           "name": "Waypoints",
-          "description": "Up to 5 stops, each an entity or a {latitude, longitude} value. Not allowed with the public transit mode."
+          "description": "Up to 5 stops, each an entity or a latitude/longitude value. Not allowed with the public transit mode."
         },
         "mode": {
           "name": "Travel mode",

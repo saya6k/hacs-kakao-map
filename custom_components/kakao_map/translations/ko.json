@@ -33,15 +33,15 @@
       "fields": {
         "origin": {
           "name": "출발지",
-          "description": "출발지 위치를 가진 엔티티(person, device_tracker, zone, sensor 등) 또는 {latitude, longitude} 값."
+          "description": "출발지 위치를 가진 엔티티(person, device_tracker, zone, sensor 등) 또는 위도/경도 값."
         },
         "destination": {
           "name": "도착지",
-          "description": "도착지 위치를 가진 엔티티 또는 {latitude, longitude} 값."
+          "description": "도착지 위치를 가진 엔티티 또는 위도/경도 값."
         },
         "waypoints": {
           "name": "경유지",
-          "description": "최대 5개, 각 항목은 엔티티 또는 {latitude, longitude} 값. 대중교통 모드에서는 사용할 수 없습니다."
+          "description": "최대 5개, 각 항목은 엔티티 또는 위도/경도 값. 대중교통 모드에서는 사용할 수 없습니다."
         },
         "mode": {
           "name": "이동 수단",
