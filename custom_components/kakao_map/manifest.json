@@ -1,0 +1,17 @@
+{
+  "domain": "kakao_map",
+  "name": "Kakao Map",
+  "codeowners": [
+    "@saya6k"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/saya6k/ha-kakao-map",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/saya6k/ha-kakao-map/issues",
+  "loggers": [
+    "custom_components.kakao_map"
+  ],
+  "requirements": [],
+  "version": "0.1.0"
+}

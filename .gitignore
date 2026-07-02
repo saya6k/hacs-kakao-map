@@ -1,0 +1,27 @@
+# Whitelist .gitignore — default-deny. Ignore everything at the top level,
+# then re-include only the paths that belong in the repo. The local dev
+# `config/` (devcontainer HA runtime state) is therefore never committed.
+/*
+
+# Tracked directories
+!/.devcontainer/
+!/custom_components/
+!/scripts/
+!/tests/
+!/tasks/
+
+# Tracked top-level files
+!/.gitignore
+!/README.md
+!/CHANGELOG.md
+!/SPEC.md
+!/hacs.json
+!/pyproject.toml
+
+# Noise inside tracked directories
+__pycache__/
+*.py[cod]
+.DS_Store
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
