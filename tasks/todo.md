@@ -26,7 +26,7 @@
 - [x] **Checkpoint 4**: 전 모드 스모크, Success Criteria #3·#5 (2026-07-02 실 HA 수동 확인: car 381s/2050m, traffic 1098s/2215m·환승0·1500원, bicycle 583s/2206m, walk=null)
 
 ## Phase 5: 지도 교체(실험적) + 마무리
-- [ ] T10: patch_map/restore_map 로직 — verify: test_map_patch (치환·백업·복원·0건)
+- [x] T10: patch_map/restore_map 로직 — verify: test_map_patch 5케이스 통과 (치환·백업·복원·0건·백업없음). 타일 URL(const)은 T11 실검증 전 provisional
 - [ ] T11: 실 타일 정렬 검증 (Open Q1) — verify: 육안 확인, 실패 시 대안 보고→사용자 결정
 - [ ] T12: README/CHANGELOG/HACS 마무리 — verify: HACS 설치 수동 확인
 - [ ] **Checkpoint 5**: Success Criteria 1~7(+8) 충족, 최종 리뷰

@@ -36,3 +36,13 @@ MODE_BICYCLE: Final = "bicycle"
 DIRECTIONS_MODES: Final = (MODE_CAR, MODE_TRAFFIC, MODE_WALK, MODE_BICYCLE)
 
 MAX_WAYPOINTS: Final = 5
+
+# Frontend map-tile patching (experimental, Open Q1). HA's default basemap is a Leaflet
+# raster layer served from cartocdn; patch_map swaps the tile-URL template for Kakao's.
+# These strings are the single knob — the Kakao template/projection is provisional until
+# verified against a real frontend bundle in T11.
+FRONTEND_SUBDIRS: Final = ("frontend_latest", "frontend_es5")
+FRONTEND_TILE_MARKER: Final = "basemaps.cartocdn.com"
+CARTOCDN_TILE_URL: Final = "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+KAKAO_TILE_URL: Final = "https://map.daumcdn.net/map_2d_hd/{z}/{x}/{y}.png"
+FRONTEND_BACKUP_SUFFIX: Final = ".backup"

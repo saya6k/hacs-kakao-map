@@ -35,3 +35,7 @@ get_directions:
             - traffic
             - walk
             - bicycle
+
+patch_map:
+
+restore_map:

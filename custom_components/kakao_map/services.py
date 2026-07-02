@@ -31,9 +31,48 @@ from .const import (
     MODE_TRAFFIC,
 )
 from .helpers import resolve_point, resolve_waypoint
+from .map_patch import (
+    MapPatchError,
+    find_frontend_dir,
+    patch_frontend,
+    restore_frontend,
+)
 
 SERVICE_SEARCH_PLACE = "search_place"
 SERVICE_GET_DIRECTIONS = "get_directions"
+SERVICE_PATCH_MAP = "patch_map"
+SERVICE_RESTORE_MAP = "restore_map"
+
+# Returned with a patch_map response; the swap only shows after a reload + cache clear.
+PATCH_NOTE = "Restart Home Assistant and clear the browser cache to see the new tiles."
+
+
+async def _async_patch_map(call: ServiceCall) -> ServiceResponse:
+    try:
+        patched = await call.hass.async_add_executor_job(
+            lambda: patch_frontend(find_frontend_dir())
+        )
+    except MapPatchError as err:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="map_patch_failed",
+            translation_placeholders={"error": str(err)},
+        ) from err
+    return {"patched_count": len(patched), "patched_files": patched, "note": PATCH_NOTE}
+
+
+async def _async_restore_map(call: ServiceCall) -> ServiceResponse:
+    try:
+        restored = await call.hass.async_add_executor_job(
+            lambda: restore_frontend(find_frontend_dir())
+        )
+    except MapPatchError as err:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="map_patch_failed",
+            translation_placeholders={"error": str(err)},
+        ) from err
+    return {"restored_count": len(restored), "restored_files": restored}
 
 ATTR_QUERY = "query"
 ATTR_ORIGIN = "origin"
@@ -158,20 +197,21 @@ def async_setup_services(
             response["fare"] = transit.fare
         return response
 
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_SEARCH_PLACE,
-        _async_search_place,
-        schema=SEARCH_PLACE_SCHEMA,
-        supports_response=SupportsResponse.ONLY,
+    registrations = (
+        (SERVICE_SEARCH_PLACE, _async_search_place, SEARCH_PLACE_SCHEMA, SupportsResponse.ONLY),
+        (
+            SERVICE_GET_DIRECTIONS,
+            _async_get_directions,
+            GET_DIRECTIONS_SCHEMA,
+            SupportsResponse.ONLY,
+        ),
+        (SERVICE_PATCH_MAP, _async_patch_map, None, SupportsResponse.OPTIONAL),
+        (SERVICE_RESTORE_MAP, _async_restore_map, None, SupportsResponse.OPTIONAL),
     )
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_GET_DIRECTIONS,
-        _async_get_directions,
-        schema=GET_DIRECTIONS_SCHEMA,
-        supports_response=SupportsResponse.ONLY,
-    )
+    for name, handler, schema, response in registrations:
+        hass.services.async_register(
+            DOMAIN, name, handler, schema=schema, supports_response=response
+        )
 
 
 @callback
@@ -179,3 +219,5 @@ def async_unload_services(hass: HomeAssistant) -> None:
     """Remove the kakao_map services."""
     hass.services.async_remove(DOMAIN, SERVICE_SEARCH_PLACE)
     hass.services.async_remove(DOMAIN, SERVICE_GET_DIRECTIONS)
+    hass.services.async_remove(DOMAIN, SERVICE_PATCH_MAP)
+    hass.services.async_remove(DOMAIN, SERVICE_RESTORE_MAP)

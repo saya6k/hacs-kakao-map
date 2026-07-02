@@ -48,6 +48,14 @@
           "description": "car / traffic(대중교통) / walk / bicycle."
         }
       }
+    },
+    "patch_map": {
+      "name": "지도 타일 교체 (실험적)",
+      "description": "프론트엔드 번들을 수정해 기본 Home Assistant 지도 타일을 카카오 타일로 교체합니다. 복원용 백업이 생성됩니다. 적용 후 HA를 재시작하고 브라우저 캐시를 삭제하세요."
+    },
+    "restore_map": {
+      "name": "지도 타일 복원",
+      "description": "patch_map이 생성한 백업에서 원래 Home Assistant 지도 타일을 복원합니다."
     }
   },
   "selector": {
@@ -84,6 +92,9 @@
     },
     "too_many_waypoints": {
       "message": "경유지가 너무 많습니다 ({count}개). 카카오맵은 최대 {max}개까지 지원합니다."
+    },
+    "map_patch_failed": {
+      "message": "지도 타일 패치를 적용하지 못했습니다: {error}"
     }
   }
 }

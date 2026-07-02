@@ -48,6 +48,14 @@
           "description": "car, traffic (public transit), walk, or bicycle."
         }
       }
+    },
+    "patch_map": {
+      "name": "Patch map tiles (experimental)",
+      "description": "Swaps the default Home Assistant map tiles for Kakao tiles by editing the frontend bundle. A backup is kept for restore_map. Restart HA and clear the browser cache afterwards."
+    },
+    "restore_map": {
+      "name": "Restore map tiles",
+      "description": "Restores the original Home Assistant map tiles from the backups created by patch_map."
     }
   },
   "selector": {
@@ -84,6 +92,9 @@
     },
     "too_many_waypoints": {
       "message": "Too many waypoints ({count}). Kakao Map allows at most {max}."
+    },
+    "map_patch_failed": {
+      "message": "The map tile patch could not be applied: {error}"
     }
   }
 }
