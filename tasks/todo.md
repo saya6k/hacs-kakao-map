@@ -23,7 +23,7 @@
 - [x] T7: car ETA (cars.json, waypoints 실측=Open Q4) — verify: 성공/강등 테스트 통과 (2026-07-02). 실측: 서울시청→강남 duration≈1195s, 경유지 `경도,위도,name=` `|` 연결 확정 (Open Q4 해소)
 - [x] T8: bicycle·traffic ETA (transcoord + bikeset/pubtrans) — verify: 파이프라인 테스트 통과 (2026-07-02). 실측: bike≈3531s/14.5km, transit≈2949s/49분·1650원. pubtrans는 `{value}` 중첩 필드(SPEC 표 정정). bike+경유지는 ETA null(bikeset 경유지 미모델링)
 - [x] T9: walk ETA 조사 (walkset 계약=Open Q2, timeboxed) — verify: 링크 전용 문서화 (2026-07-02). walkset은 빈 `ids`로 항상 NO_RESULT → walk 링크 전용(ETA null) 확정, SPEC Open Q2 결론 기록
-- [ ] **Checkpoint 4**: 전 모드 스모크, Success Criteria #3·#5 → 사용자 수동 확인 대기
+- [x] **Checkpoint 4**: 전 모드 스모크, Success Criteria #3·#5 (2026-07-02 실 HA 수동 확인: car 381s/2050m, traffic 1098s/2215m·환승0·1500원, bicycle 583s/2206m, walk=null)
 
 ## Phase 5: 지도 교체(실험적) + 마무리
 - [ ] T10: patch_map/restore_map 로직 — verify: test_map_patch (치환·백업·복원·0건)
