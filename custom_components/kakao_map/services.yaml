@@ -22,6 +22,7 @@ get_directions:
       example: "[zone.office, {latitude: 37.39, longitude: 127.11}]"
       selector:
         object:
+          multiple: true
     mode:
       default: car
       selector:
