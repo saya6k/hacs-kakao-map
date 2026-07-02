@@ -284,4 +284,6 @@ async def async_search_keyword(self, query: str) -> list[dict[str, Any]]:
 2. **walkset.json 요청 계약** — 전체 파라미터 전달 시 HTTP 200이나 유효 경로에서도 NO_RESULT.
    구현 시 브라우저 devtools로 실제 요청 캡처해 확정. 미해결 시 walk 모드는 링크만 반환(duration null)
 3. HA 2026.x 프론트엔드 번들에 `basemaps.cartocdn.com` 문자열 패턴이 유지되는지 — 패치 구현 시 확인
-4. `cars.json` 경유지(`waypoints` 파라미터) 형식 — 단일/다중 경유지 실측 검증 필요 (구현 시)
+4. ~~`cars.json` 경유지(`waypoints` 파라미터) 형식~~ — **확정(2026-07-02, T7 실측)**: 경유지는
+   `경도,위도,name={이름}` 형식이며 여러 개는 `|`로 연결. 단일·2개 경유지 모두 `resultCode: SUCCESS`로
+   응답하고 `summary.waypoints`에 이름이 반영됨.

@@ -17,10 +17,10 @@
       ※ 사용자 확정: 지점당 단일 필드(`origin`/`destination`), 값은 entity_id 또는 `{latitude, longitude}` 매핑.
         entity/좌표 필드를 분리하지 않음. waypoints도 entity 또는 좌표 혼용. SPEC 반영 완료.
 - [x] T6: `get_directions` 링크+legs (ETA null) — verify: 모드별 URL/legs/에러 테스트 통과 (2026-07-02). 링크 수동 확인은 사용자 몫
-- [ ] **Checkpoint 3**: 링크 E2E, Success Criteria #4 → 리뷰
+- [x] **Checkpoint 3**: 링크 E2E, Success Criteria #4 → 리뷰 (2026-07-02 사용자 승인, scripts/test 통과)
 
 ## Phase 4: ETA (내부 API, best-effort)
-- [ ] T7: car ETA (cars.json, waypoints 실측=Open Q4) — verify: 성공/강등 테스트 + 실측 근사
+- [x] T7: car ETA (cars.json, waypoints 실측=Open Q4) — verify: 성공/강등 테스트 통과 (2026-07-02). 실측: 서울시청→강남 duration≈1195s, 경유지 `경도,위도,name=` `|` 연결 확정 (Open Q4 해소)
 - [ ] T8: bicycle·traffic ETA (transcoord + bikeset/pubtrans) — verify: 파이프라인 테스트 + 실측 근사
 - [ ] T9: walk ETA 조사 (walkset 계약=Open Q2, timeboxed) — verify: 연동 or 링크 전용 문서화
 - [ ] **Checkpoint 4**: 전 모드 스모크, Success Criteria #3·#5

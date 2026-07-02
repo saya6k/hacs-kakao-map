@@ -7,16 +7,18 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import KakaoLocalApi
+from .api import KakaoLocalApi, KakaoMapRouteApi
 from .const import DOMAIN
 from .services import async_setup_services, async_unload_services
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Kakao Map from a config entry."""
-    api = KakaoLocalApi(async_get_clientsession(hass), entry.data[CONF_API_KEY])
+    session = async_get_clientsession(hass)
+    api = KakaoLocalApi(session, entry.data[CONF_API_KEY])
+    route_api = KakaoMapRouteApi(session)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = api
-    async_setup_services(hass, api)
+    async_setup_services(hass, api, route_api)
     return True
 
 

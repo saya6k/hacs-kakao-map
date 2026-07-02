@@ -15,6 +15,17 @@ TRANSCOORD_URL: Final = "https://dapi.kakao.com/v2/local/geo/transcoord.json"
 MAP_LINK_BASE: Final = "https://map.kakao.com/link/map"
 DIRECTIONS_LINK_BASE: Final = "https://map.kakao.com/link/by"
 
+# Kakao Map internal route API (undocumented; needs Referer + browser UA, no API key).
+# best-effort only: may change or block without notice, so ETA data degrades to null.
+CARS_ROUTE_URL: Final = "https://map.kakao.com/route/cars.json"
+ROUTE_API_HEADERS: Final = {
+    "Referer": "https://map.kakao.com/",
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    ),
+}
+
 # Directions travel mode tokens used by the web URL scheme
 MODE_CAR: Final = "car"
 MODE_TRAFFIC: Final = "traffic"

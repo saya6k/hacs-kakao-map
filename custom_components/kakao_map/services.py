@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from itertools import pairwise
 
 import aiohttp
@@ -15,8 +16,9 @@ from homeassistant.core import (
 )
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.util import dt as dt_util
 
-from .api import KakaoApiError, KakaoLocalApi
+from .api import KakaoApiError, KakaoLocalApi, KakaoMapRouteApi
 from .const import (
     DIRECTIONS_LINK_BASE,
     DIRECTIONS_MODES,
@@ -53,8 +55,10 @@ GET_DIRECTIONS_SCHEMA = vol.Schema(
 
 
 @callback
-def async_setup_services(hass: HomeAssistant, api: KakaoLocalApi) -> None:
-    """Register the kakao_map services against the given API client."""
+def async_setup_services(
+    hass: HomeAssistant, api: KakaoLocalApi, route_api: KakaoMapRouteApi
+) -> None:
+    """Register the kakao_map services against the given API clients."""
 
     async def _async_search_place(call: ServiceCall) -> ServiceResponse:
         query = call.data[ATTR_QUERY]
@@ -107,6 +111,19 @@ def async_setup_services(hass: HomeAssistant, api: KakaoLocalApi) -> None:
         )
         points.append(resolve_point(hass, role="도착지", value=call.data.get(ATTR_DESTINATION)))
         path = "/".join(f"{p.name},{p.latitude},{p.longitude}" for p in points)
+        duration: int | None = None
+        distance: int | None = None
+        arrival_time: str | None = None
+        if mode == MODE_CAR:
+            result = await route_api.async_get_car_route(
+                points[0], points[-1], points[1:-1]
+            )
+            if result is not None:
+                duration = result.duration
+                distance = result.distance
+                arrival_time = (
+                    dt_util.now() + timedelta(seconds=duration)
+                ).isoformat()
         legs = [
             {
                 "from": a.name,
@@ -121,9 +138,9 @@ def async_setup_services(hass: HomeAssistant, api: KakaoLocalApi) -> None:
         return {
             "route_url": f"{DIRECTIONS_LINK_BASE}/{mode}/{path}",
             "mode": mode,
-            "duration": None,
-            "distance": None,
-            "arrival_time": None,
+            "duration": duration,
+            "distance": distance,
+            "arrival_time": arrival_time,
             "legs": legs,
         }
 

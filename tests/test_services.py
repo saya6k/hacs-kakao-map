@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 import pytest
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.kakao_map.const import DOMAIN, KEYWORD_SEARCH_URL
+from custom_components.kakao_map.const import CARS_ROUTE_URL, DOMAIN, KEYWORD_SEARCH_URL
 from custom_components.kakao_map.helpers import (
     ResolvedPoint,
     resolve_point,
@@ -221,9 +224,12 @@ async def test_resolve_waypoint_invalid(hass: HomeAssistant, value: object) -> N
     assert err.value.translation_placeholders["role"] == "경유지1"
 
 
-async def test_get_directions_builds_car_link_and_legs(hass: HomeAssistant) -> None:
+async def test_get_directions_builds_car_link_and_legs(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     """get_directions returns the official route URL, legs, and null ETA fields."""
     await _setup_integration(hass)
+    aioclient_mock.get(CARS_ROUTE_URL, status=500)
 
     response = await hass.services.async_call(
         DOMAIN,
@@ -256,9 +262,12 @@ async def test_get_directions_builds_car_link_and_legs(hass: HomeAssistant) -> N
 
 
 @pytest.mark.parametrize("mode", ["car", "traffic", "walk", "bicycle"])
-async def test_get_directions_mode_token_in_url(hass: HomeAssistant, mode: str) -> None:
+async def test_get_directions_mode_token_in_url(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mode: str
+) -> None:
     """Each travel mode produces the matching link/by/{mode} URL token."""
     await _setup_integration(hass)
+    aioclient_mock.get(CARS_ROUTE_URL, status=500)
 
     response = await hass.services.async_call(
         DOMAIN,
@@ -279,10 +288,11 @@ async def test_get_directions_mode_token_in_url(hass: HomeAssistant, mode: str) 
 
 
 async def test_get_directions_orders_waypoints_between_endpoints(
-    hass: HomeAssistant,
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
     """Waypoints appear in order between origin and destination in URL and legs."""
     await _setup_integration(hass)
+    aioclient_mock.get(CARS_ROUTE_URL, status=500)
 
     response = await hass.services.async_call(
         DOMAIN,
@@ -307,9 +317,12 @@ async def test_get_directions_orders_waypoints_between_endpoints(
     assert [leg["to"] for leg in response["legs"]] == ["경유지1", "경유지2", "도착지"]
 
 
-async def test_get_directions_mixes_entity_and_coords(hass: HomeAssistant) -> None:
+async def test_get_directions_mixes_entity_and_coords(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     """An entity origin and a coordinate destination resolve into one route."""
     await _setup_integration(hass)
+    aioclient_mock.get(CARS_ROUTE_URL, status=500)
     hass.states.async_set(
         "zone.home",
         "zoning",
@@ -373,6 +386,62 @@ async def test_get_directions_rejects_more_than_five_waypoints(
         )
 
     assert err.value.translation_key == "too_many_waypoints"
+
+
+async def test_get_directions_car_populates_eta(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A car route fills duration, distance, and arrival_time from cars.json."""
+    await _setup_integration(hass)
+    aioclient_mock.get(
+        CARS_ROUTE_URL,
+        json=[{"resultCode": "SUCCESS", "summary": {"duration": 1195, "distance": 10109}}],
+    )
+
+    before = dt_util.now()
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "destination": {"latitude": 37.4979, "longitude": 127.0276},
+        },
+        blocking=True,
+        return_response=True,
+    )
+    after = dt_util.now()
+
+    assert response["duration"] == 1195
+    assert response["distance"] == 10109
+    arrival = dt_util.parse_datetime(response["arrival_time"])
+    assert arrival is not None
+    assert before + timedelta(seconds=1195) <= arrival <= after + timedelta(seconds=1195)
+
+
+async def test_get_directions_car_degrades_but_keeps_link(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """When cars.json fails, ETA fields are null but the route link is still returned."""
+    await _setup_integration(hass)
+    aioclient_mock.get(CARS_ROUTE_URL, status=500)
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "destination": {"latitude": 37.4979, "longitude": 127.0276},
+        },
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["duration"] is None
+    assert response["distance"] is None
+    assert response["arrival_time"] is None
+    assert response["route_url"] == (
+        "https://map.kakao.com/link/by/car/출발지,37.5663,126.9779/도착지,37.4979,127.0276"
+    )
 
 
 async def test_get_directions_removed_on_unload(hass: HomeAssistant) -> None:
