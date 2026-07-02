@@ -1,16 +1,71 @@
 #!/usr/bin/env bash
 # Install Home Assistant + dev/test deps inside the devcontainer.
+# Mirrors the last-known-good pattern from ~/Projects/ha-xbloom.
 set -euxo pipefail
 
 cd "$(dirname "$0")/.."
 
 python3 -m pip install --upgrade pip wheel
 
-python3 -m pip install "ruff" "colorlog" -r tests/requirements_test.txt
+# System libraries used by HA's default_config bundle:
+#   ffmpeg          → ffmpeg integration (camera streams, snapshots)
+#   libturbojpeg0   → camera image utility (fast JPEG decode)
+#   libpcap0.8      → aiodhcpwatcher (DHCP discovery for some integrations)
+APT_PKGS=(ffmpeg libturbojpeg0 libpcap0.8)
+APT_NEEDED=()
+for pkg in "${APT_PKGS[@]}"; do
+  if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+    APT_NEEDED+=("$pkg")
+  fi
+done
+if [ "${#APT_NEEDED[@]}" -gt 0 ]; then
+  sudo apt-get update
+  sudo apt-get install -y --no-install-recommends "${APT_NEEDED[@]}"
+fi
+
+# go2rtc: streaming relay bundled with HA Container/Supervised but absent
+# from a vanilla pip install. Without it, default_config setup fails. We pull
+# the matching Linux binary from upstream releases.
+if ! command -v go2rtc >/dev/null 2>&1; then
+  ARCH=$(dpkg --print-architecture)
+  case "$ARCH" in
+    amd64) GO2RTC_TARGET=linux_amd64 ;;
+    arm64) GO2RTC_TARGET=linux_arm64 ;;
+    *) GO2RTC_TARGET="" ;;
+  esac
+  if [ -n "$GO2RTC_TARGET" ]; then
+    GO2RTC_VERSION=$(
+      curl -fsSL --max-time 5 https://api.github.com/repos/AlexxIT/go2rtc/releases/latest 2>/dev/null \
+        | sed -nE 's/.*"tag_name": *"v([^"]+)".*/\1/p' | head -n1 \
+        || true
+    )
+    GO2RTC_VERSION="${GO2RTC_VERSION:-1.9.10}"
+    if sudo curl -fsSL -o /usr/local/bin/go2rtc \
+        "https://github.com/AlexxIT/go2rtc/releases/download/v${GO2RTC_VERSION}/go2rtc_${GO2RTC_TARGET}"; then
+      sudo chmod +x /usr/local/bin/go2rtc
+    else
+      echo "WARN: go2rtc download failed; default_config will log a setup error." >&2
+      sudo rm -f /usr/local/bin/go2rtc
+    fi
+  else
+    echo "WARN: skipping go2rtc — unsupported arch $ARCH" >&2
+  fi
+fi
+
+# aioesphomeapi is a transitive dep of HA's `usb` integration that HA does
+# not list in its core wheel; default_config hits a ModuleNotFoundError at
+# startup unless installed explicitly.
+python3 -m pip install \
+  "aioesphomeapi" \
+  "bleak>=2.0.0" \
+  "ruff" \
+  "colorlog" \
+  -r tests/requirements_test.txt
 
 mkdir -p config
 if [ ! -f config/configuration.yaml ]; then
   cat > config/configuration.yaml <<'YAML'
+# kakao_map devcontainer configuration.
 homeassistant:
   name: kakao_map Dev
   latitude: 37.5665
@@ -18,11 +73,13 @@ homeassistant:
   elevation: 0
   unit_system: metric
   time_zone: Asia/Seoul
+  external_url: "http://localhost:8123"
+  internal_url: "http://localhost:8123"
 
-# Slim dev setup — default_config pulls camera/usb/bluetooth deps the
-# devcontainer image can't satisfy (libturbojpeg 등 시스템 라이브러리).
-frontend:
-config:
+default_config:
+
+http:
+  server_port: 8123
 
 logger:
   default: info

@@ -5,8 +5,8 @@
 ## Phase 1: Foundation
 - [x] T1: 저장소 스캐폴딩 (manifest/const/hacs.json/pyproject/.gitignore, git init) — verify: manifest JSON 유효, ruff 클린
 - [x] T2: devcontainer + scripts + 테스트 하네스 — verify: `container exec … scripts/test` 통과, HA 기동
-- [x] T3: config flow (API 키 검증, api.py keyword 최소 구현) — verify: test_config_flow 3케이스 + 실 키 수동 (수동 검증 남음 — Checkpoint 1에서)
-- [ ] **Checkpoint 1**: 설치·설정 가능, scripts/test 통과 → 리뷰
+- [x] T3: config flow (API 키 검증, api.py keyword 최소 구현) — verify: test_config_flow 3케이스 + 실 키 수동
+- [x] **Checkpoint 1**: 설치·설정 가능, scripts/test 통과 → 리뷰 (2026-07-02 실 키 등록·오류 표시 수동 확인)
 
 ## Phase 2: 장소 검색
 - [ ] T4: `search_place` 서비스 — verify: 정상/0건/API 오류 테스트 + "카카오판교아지트" 수동
