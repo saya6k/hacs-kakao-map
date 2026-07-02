@@ -21,4 +21,4 @@ All notable changes to this project are documented here. The format follows
 
 ### Removed
 - 실험적 지도 타일 교체(`patch_map`/`restore_map`): 카카오 타일 투영 불일치(빈 화면) + 프론트엔드
-  immutable 캐시로 실현 불가함이 확인되어 폐기(SPEC Open Q1 결론).
+  immutable 캐시로 실현 불가함이 확인되어 폐기.

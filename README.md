@@ -10,7 +10,7 @@
 
 Kakao Map for Home Assistant — **place search**, **nearby search**, and **directions** (Kakao Map link plus best-effort travel time) built on the Kakao Local REST API and Kakao Map's web/internal APIs. For Korean users.
 
-> **Map-tile replacement is not supported.** Patching the HA frontend to serve Kakao tiles is not feasible: Kakao tiles are not Web Mercator (XYZ), so a URL swap yields blank tiles, and the frontend's immutable cache + service worker prevent the patch from taking effect. See the Open Q1 conclusion in `SPEC.md`.
+> **Map-tile replacement is not supported.** Patching the HA frontend to serve Kakao tiles is not feasible: Kakao tiles are not Web Mercator (XYZ), so a URL swap yields blank tiles, and the frontend's immutable cache + service worker prevent the patch from taking effect.
 
 ## Features
 
@@ -106,7 +106,7 @@ See `custom_components/kakao_map/services.yaml` for all fields.
 - **`mode: walk` is link-only** — the walking route API contract is unresolved, so its ETA fields are `null`.
 - **`mode: traffic`** (public transit) does not support waypoints and adds `transfers` and `fare` to the response.
 - No APIs that require a separate subscription (e.g. Kakao Mobility) are used.
-- **No map-tile replacement** — see the note above and `SPEC.md` Open Q1.
+- **No map-tile replacement** — see the note near the top.
 
 ## Development
 
@@ -116,7 +116,7 @@ A devcontainer is provided for testing against a real Home Assistant install. Op
 scripts/develop
 ```
 
-HA binds port 8123 inside the container, whose hostname is `ha-kakao-map-dev` so it's distinguishable from any production HA on the host network. Run the lint + test suite with `scripts/test`. See `SPEC.md` for architecture, API facts, and design decisions.
+HA binds port 8123 inside the container, whose hostname is `ha-kakao-map-dev` so it's distinguishable from any production HA on the host network. Run the lint + test suite with `scripts/test`. See `AGENTS.md` for architecture, API facts, and conventions.
 
 ## License
 

@@ -1,8 +1,8 @@
 # Repository agent instructions
 
 Briefs Claude / GPT / other coding agents on the conventions and load-bearing facts of
-`kakao_map`. Read this before making changes. Architecture, API facts, and the record of
-design decisions live in `SPEC.md`; this file is the quick operational brief.
+`kakao_map`. Read this before making changes — it is the architecture + operational brief
+for the integration (layout, hard rules, API facts, testing).
 
 ## Repository layout
 
@@ -22,9 +22,8 @@ ha-kakao-map/
 ├── .devcontainer/                 ← devcontainer.json (Apple Container CLI, not Docker)
 ├── scripts/{setup,develop,test}
 ├── docs/{en,ko}/index.md          ← published via Zensical (see zensical.*.toml)
-├── .github/workflows/             ← CI: validate (HACS+hassfest), release-please, docs
-├── SPEC.md                        ← spec + API facts + decision record (Open Questions)
-├── tasks/{plan,todo}.md
+├── .github/workflows/             ← CI: test (ruff+pytest), validate (HACS+hassfest),
+│                                     release-drafter, docs
 ├── hacs.json
 └── README.md
 ```
@@ -43,8 +42,8 @@ ha-kakao-map/
    selector covers all modes.
 4. **Do not patch the HA frontend / replace map tiles.** This was tried and dropped: Kakao
    tiles are EPSG:5181 (not Web Mercator XYZ) so a URL swap yields blank tiles, and the
-   frontend's immutable cache + service worker block the patch. See `SPEC.md` Open Q1. An
-   in-app Kakao map is only viable via an iframe + Kakao JS SDK custom panel (not implemented).
+   frontend's immutable cache + service worker block the patch. An in-app Kakao map is only
+   viable via an iframe + Kakao JS SDK custom panel (not implemented).
 5. **Category input is a friendly slug, never a raw Kakao code.** `search_nearby` accepts
    slugs (`cafe`, `restaurant`, …) validated against `const.CATEGORY_CODES`; the handler maps
    the slug to the Kakao group code (CE7, FD6, …) before calling the API. Users never see codes.
@@ -60,7 +59,7 @@ ha-kakao-map/
 - **Internal route APIs** (no key; need `Referer: https://map.kakao.com/` + a browser UA):
   `route/cars.json` (car), `route/bikeset.json` (bicycle), `route/pubtrans.json` (transit).
   bike/transit require WCONGNAMUL coords via `transcoord`. `walk` has no working contract →
-  link-only, ETA `null` (SPEC Open Q2). transit adds `transfers` / `fare`.
+  link-only, ETA `null`. transit adds `transfers` / `fare`.
 - **Category group codes are a fixed Kakao set of 18** — Kakao does not add them dynamically
   and `category.json` accepts only those. Anything else is a keyword (`query`) search; results
   carry Kakao's detailed `category_name` / `category_group_name` for fine-grained filtering.

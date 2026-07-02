@@ -9,7 +9,6 @@
 !/custom_components/
 !/scripts/
 !/tests/
-!/tasks/
 !/docs/
 
 # Tracked top-level files
@@ -18,11 +17,13 @@
 !/CHANGELOG.md
 !/LICENSE
 !/AGENTS.md
-!/SPEC.md
 !/hacs.json
 !/pyproject.toml
 !/zensical.en.toml
 !/zensical.ko.toml
+
+# Dev-only planning artifacts stay local and untracked (never whitelisted):
+#   SPEC.md, tasks/, plan.md, todo.md, spec/
 
 # Noise inside tracked directories
 __pycache__/

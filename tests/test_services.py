@@ -723,8 +723,8 @@ async def test_get_directions_traffic_degrades_but_keeps_link(
 async def test_get_directions_walk_is_link_only(hass: HomeAssistant) -> None:
     """Walk mode returns the link with null ETA and makes no internal API call.
 
-    walkset.json's contract is unresolved (Open Q2), so walk is intentionally
-    link-only. Registering no HTTP mock proves no route lookup is attempted.
+    walkset.json's contract is unresolved, so walk is intentionally link-only.
+    Registering no HTTP mock proves no route lookup is attempted.
     """
     await _setup_integration(hass)
 
