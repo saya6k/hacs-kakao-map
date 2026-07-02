@@ -7,7 +7,8 @@ Home Assistant 커스텀 컴포넌트. Kakao Local REST API, 카카오맵 웹 UR
 
 한국 사용자용 HA 통합. 세 가지 기능:
 
-1. **장소 검색 서비스** — 자연어 키워드로 장소를 검색해 상위 5건까지 좌표·주소·카카오맵 링크를 반환
+1. **장소 검색 서비스** — 자연어 키워드로 장소를 검색해 상위 5건까지 좌표·주소·카카오맵 링크를 반환.
+   중심 지점 주변을 카테고리 코드 또는 키워드로 검색하는 `search_nearby`도 제공(거리순)
 2. **길찾기 서비스** — 출발/도착/경유지(선택)를 **entity selector(위치 보유 기기/엔티티) 또는 좌표**로 받아,
    이동수단(자동차/대중교통/도보/자전거)별 카카오맵 길찾기 링크 + 구간 리스트 + 소요시간·도착 예정시간을 반환
 3. ~~**기본 지도 교체 서비스**~~ — **폐기(2026-07-03).** 프론트엔드 타일 URL 패치로 시도했으나
@@ -145,6 +146,21 @@ results:
 ```
 
 결과 0건 → `ServiceValidationError`.
+
+### `kakao_map.search_nearby`
+
+중심 지점 주변을 **카테고리 코드 또는 키워드**로 검색(거리순 상위 5건).
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `center` | entity_id 또는 `{latitude, longitude}` | O | 검색 중심점 (`resolve_point` 재사용) |
+| `category` | string | △ | 카카오 카테고리 그룹 코드 (CE7 카페, FD6 음식점, CS2 편의점 등) |
+| `query` | string | △ | 검색 키워드 |
+| `radius` | int(m) | X | 검색 반경, 기본 1000, 최대 20000 |
+
+- `category`·`query`는 **정확히 하나만** 지정 (둘 다/미지정 → `ServiceValidationError` `nearby_input`)
+- API: category → `search/category.json`, keyword → `search/keyword.json`(+`x`,`y`,`radius`,`sort=distance`)
+- 응답: `search_place`와 동일한 `results` 리스트, 각 항목에 `distance`(m) 추가. 0건 → `ServiceValidationError`
 
 ### `kakao_map.get_directions`
 

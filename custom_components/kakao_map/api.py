@@ -13,6 +13,7 @@ import aiohttp
 from .const import (
     BIKESET_ROUTE_URL,
     CARS_ROUTE_URL,
+    CATEGORY_SEARCH_URL,
     KEYWORD_SEARCH_URL,
     PUBTRANS_ROUTE_URL,
     ROUTE_API_HEADERS,
@@ -50,13 +51,48 @@ class KakaoLocalApi:
         self._session = session
         self._api_key = api_key
 
-    async def async_search_keyword(self, query: str) -> list[dict[str, Any]]:
-        """Search places by keyword and return raw documents."""
+    async def async_search_keyword(
+        self,
+        query: str,
+        *,
+        longitude: float | None = None,
+        latitude: float | None = None,
+        radius: int | None = None,
+    ) -> list[dict[str, Any]]:
+        """Search places by keyword and return raw documents.
+
+        When longitude/latitude are given the results are biased to that point
+        (within radius, ordered by distance) for nearby searches.
+        """
+        params: dict[str, str | float | int] = {"query": query}
+        if longitude is not None and latitude is not None:
+            params.update({"x": longitude, "y": latitude, "sort": "distance"})
+            if radius is not None:
+                params["radius"] = radius
+        return await self._async_search(KEYWORD_SEARCH_URL, params)
+
+    async def async_search_category(
+        self, category_group_code: str, longitude: float, latitude: float, radius: int
+    ) -> list[dict[str, Any]]:
+        """Search a category group around a point, ordered by distance."""
+        return await self._async_search(
+            CATEGORY_SEARCH_URL,
+            {
+                "category_group_code": category_group_code,
+                "x": longitude,
+                "y": latitude,
+                "radius": radius,
+                "sort": "distance",
+            },
+        )
+
+    async def _async_search(
+        self, url: str, params: dict[str, str | float | int]
+    ) -> list[dict[str, Any]]:
+        """Call a Local search endpoint and return its documents."""
         headers = {"Authorization": f"KakaoAK {self._api_key}"}
         async with asyncio.timeout(10):
-            resp = await self._session.get(
-                KEYWORD_SEARCH_URL, params={"query": query}, headers=headers
-            )
+            resp = await self._session.get(url, params=params, headers=headers)
         if resp.status == HTTPStatus.UNAUTHORIZED:
             raise InvalidApiKey
         resp.raise_for_status()

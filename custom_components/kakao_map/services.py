@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from functools import partial
 from itertools import pairwise
 from typing import Any
 
@@ -21,10 +22,13 @@ from homeassistant.util import dt as dt_util
 
 from .api import KakaoApiError, KakaoLocalApi, KakaoMapRouteApi, TransitResult
 from .const import (
+    CATEGORY_GROUP_CODES,
+    DEFAULT_NEARBY_RADIUS,
     DIRECTIONS_LINK_BASE,
     DIRECTIONS_MODES,
     DOMAIN,
     MAP_LINK_BASE,
+    MAX_NEARBY_RADIUS,
     MAX_SEARCH_RESULTS,
     MAX_WAYPOINTS,
     MODE_BICYCLE,
@@ -34,18 +38,35 @@ from .const import (
 from .helpers import resolve_point, resolve_waypoint
 
 SERVICE_SEARCH_PLACE = "search_place"
+SERVICE_SEARCH_NEARBY = "search_nearby"
 SERVICE_GET_DIRECTIONS = "get_directions"
 
 ATTR_QUERY = "query"
+ATTR_CENTER = "center"
+ATTR_CATEGORY = "category"
+ATTR_RADIUS = "radius"
 ATTR_ORIGIN = "origin"
 ATTR_DESTINATION = "destination"
 ATTR_WAYPOINTS = "waypoints"
 ATTR_MODE = "mode"
 
+NEARBY_CENTER_ROLE = "중심 지점"
+
 SEARCH_PLACE_SCHEMA = vol.Schema({vol.Required(ATTR_QUERY): cv.string})
 
 # A point is an entity_id (resolved from its lat/lon attributes) or a location mapping.
 POINT_INPUT = vol.Any(cv.entity_id, dict)
+
+SEARCH_NEARBY_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_CENTER): POINT_INPUT,
+        vol.Optional(ATTR_CATEGORY): vol.In(CATEGORY_GROUP_CODES),
+        vol.Optional(ATTR_QUERY): cv.string,
+        vol.Optional(ATTR_RADIUS, default=DEFAULT_NEARBY_RADIUS): vol.All(
+            vol.Coerce(int), vol.Range(min=1, max=MAX_NEARBY_RADIUS)
+        ),
+    }
+)
 
 GET_DIRECTIONS_SCHEMA = vol.Schema(
     {
@@ -58,11 +79,11 @@ GET_DIRECTIONS_SCHEMA = vol.Schema(
 
 
 def _place_result(doc: dict[str, Any]) -> dict[str, Any]:
-    """Map a Kakao keyword-search document to the SPEC response schema."""
+    """Map a Kakao search document to the SPEC response schema."""
     name = doc["place_name"]
     latitude = float(doc["y"])
     longitude = float(doc["x"])
-    return {
+    result = {
         "place_name": name,
         "latitude": latitude,
         "longitude": longitude,
@@ -71,6 +92,44 @@ def _place_result(doc: dict[str, Any]) -> dict[str, Any]:
         "place_url": doc["place_url"],
         "map_url": f"{MAP_LINK_BASE}/{name},{latitude},{longitude}",
     }
+    # `distance` (meters from the center) is only present on nearby searches.
+    if doc.get("distance"):
+        result["distance"] = int(doc["distance"])
+    return result
+
+
+async def _async_search_nearby(
+    hass: HomeAssistant, api: KakaoLocalApi, call: ServiceCall
+) -> ServiceResponse:
+    """Search places of a category or keyword around a center point."""
+    category = call.data.get(ATTR_CATEGORY)
+    query = call.data.get(ATTR_QUERY)
+    if bool(category) == bool(query):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN, translation_key="nearby_input"
+        )
+    center = resolve_point(hass, role=NEARBY_CENTER_ROLE, value=call.data.get(ATTR_CENTER))
+    radius = call.data[ATTR_RADIUS]
+    try:
+        if category:
+            documents = await api.async_search_category(
+                category, center.longitude, center.latitude, radius
+            )
+        else:
+            documents = await api.async_search_keyword(
+                query, longitude=center.longitude, latitude=center.latitude, radius=radius
+            )
+    except (KakaoApiError, aiohttp.ClientError, TimeoutError) as err:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN, translation_key="api_error"
+        ) from err
+    if not documents:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="no_results",
+            translation_placeholders={"query": query or category},
+        )
+    return {"results": [_place_result(doc) for doc in documents[:MAX_SEARCH_RESULTS]]}
 
 
 @callback
@@ -172,6 +231,13 @@ def async_setup_services(
     )
     hass.services.async_register(
         DOMAIN,
+        SERVICE_SEARCH_NEARBY,
+        partial(_async_search_nearby, hass, api),
+        schema=SEARCH_NEARBY_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
         SERVICE_GET_DIRECTIONS,
         _async_get_directions,
         schema=GET_DIRECTIONS_SCHEMA,
@@ -183,4 +249,5 @@ def async_setup_services(
 def async_unload_services(hass: HomeAssistant) -> None:
     """Remove the kakao_map services."""
     hass.services.async_remove(DOMAIN, SERVICE_SEARCH_PLACE)
+    hass.services.async_remove(DOMAIN, SERVICE_SEARCH_NEARBY)
     hass.services.async_remove(DOMAIN, SERVICE_GET_DIRECTIONS)

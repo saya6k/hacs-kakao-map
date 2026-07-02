@@ -8,6 +8,7 @@ DOMAIN: Final = "kakao_map"
 
 # Official Kakao Local REST API endpoints (require `Authorization: KakaoAK {key}`)
 KEYWORD_SEARCH_URL: Final = "https://dapi.kakao.com/v2/local/search/keyword.json"
+CATEGORY_SEARCH_URL: Final = "https://dapi.kakao.com/v2/local/search/category.json"
 ADDRESS_SEARCH_URL: Final = "https://dapi.kakao.com/v2/local/search/address.json"
 TRANSCOORD_URL: Final = "https://dapi.kakao.com/v2/local/geo/transcoord.json"
 
@@ -37,3 +38,28 @@ DIRECTIONS_MODES: Final = (MODE_CAR, MODE_TRAFFIC, MODE_WALK, MODE_BICYCLE)
 
 MAX_WAYPOINTS: Final = 5
 MAX_SEARCH_RESULTS: Final = 5
+
+# Nearby search (search_nearby): center point + category code or keyword within a radius.
+DEFAULT_NEARBY_RADIUS: Final = 1000  # meters
+MAX_NEARBY_RADIUS: Final = 20000  # Kakao's cap for radius (meters)
+# Kakao Local category group codes accepted by category.json.
+CATEGORY_GROUP_CODES: Final = (
+    "MT1",  # 대형마트
+    "CS2",  # 편의점
+    "PS3",  # 어린이집·유치원
+    "SC4",  # 학교
+    "AC5",  # 학원
+    "PK6",  # 주차장
+    "OL7",  # 주유소·충전소
+    "SW8",  # 지하철역
+    "BK9",  # 은행
+    "CT1",  # 문화시설
+    "AG2",  # 중개업소
+    "PO3",  # 공공기관
+    "AT4",  # 관광명소
+    "AD5",  # 숙박
+    "FD6",  # 음식점
+    "CE7",  # 카페
+    "HP8",  # 병원
+    "PM9",  # 약국
+)

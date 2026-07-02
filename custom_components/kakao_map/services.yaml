@@ -6,6 +6,51 @@ search_place:
       selector:
         text:
 
+search_nearby:
+  fields:
+    center:
+      required: true
+      example: "{latitude: 37.5665, longitude: 126.978}"
+      selector:
+        location:
+          radius: false
+    category:
+      example: CE7
+      selector:
+        select:
+          translation_key: category
+          options:
+            - MT1
+            - CS2
+            - PS3
+            - SC4
+            - AC5
+            - PK6
+            - OL7
+            - SW8
+            - BK9
+            - CT1
+            - AG2
+            - PO3
+            - AT4
+            - AD5
+            - FD6
+            - CE7
+            - HP8
+            - PM9
+    query:
+      example: "스타벅스"
+      selector:
+        text:
+    radius:
+      default: 1000
+      selector:
+        number:
+          min: 1
+          max: 20000
+          unit_of_measurement: m
+          mode: box
+
 get_directions:
   fields:
     origin:

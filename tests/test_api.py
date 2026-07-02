@@ -13,10 +13,64 @@ from custom_components.kakao_map.api import KakaoLocalApi, KakaoMapRouteApi
 from custom_components.kakao_map.const import (
     BIKESET_ROUTE_URL,
     CARS_ROUTE_URL,
+    CATEGORY_SEARCH_URL,
+    KEYWORD_SEARCH_URL,
     PUBTRANS_ROUTE_URL,
     TRANSCOORD_URL,
 )
 from custom_components.kakao_map.helpers import ResolvedPoint
+
+
+async def test_search_category_sends_location_and_returns_documents(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Category search posts the code + center + radius and returns raw documents."""
+    api = KakaoLocalApi(async_get_clientsession(hass), "test-key")
+    aioclient_mock.get(CATEGORY_SEARCH_URL, json={"documents": [{"place_name": "GS25 시청점"}]})
+
+    docs = await api.async_search_category("CS2", 126.9779, 37.5663, 500)
+
+    assert docs == [{"place_name": "GS25 시청점"}]
+    query = aioclient_mock.mock_calls[-1][1].query
+    assert query["category_group_code"] == "CS2"
+    assert query["x"] == "126.9779"
+    assert query["y"] == "37.5663"
+    assert query["radius"] == "500"
+    assert query["sort"] == "distance"
+    assert aioclient_mock.mock_calls[-1][3]["Authorization"] == "KakaoAK test-key"
+
+
+async def test_search_keyword_with_location_bias(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Keyword search adds x/y/radius/sort when a center is given."""
+    api = KakaoLocalApi(async_get_clientsession(hass), "test-key")
+    aioclient_mock.get(KEYWORD_SEARCH_URL, json={"documents": []})
+
+    await api.async_search_keyword(
+        "스타벅스", longitude=126.9779, latitude=37.5663, radius=800
+    )
+
+    query = aioclient_mock.mock_calls[-1][1].query
+    assert query["query"] == "스타벅스"
+    assert query["x"] == "126.9779"
+    assert query["y"] == "37.5663"
+    assert query["radius"] == "800"
+    assert query["sort"] == "distance"
+
+
+async def test_search_keyword_without_location_omits_bias(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Plain keyword search sends only the query (no location params)."""
+    api = KakaoLocalApi(async_get_clientsession(hass), "test-key")
+    aioclient_mock.get(KEYWORD_SEARCH_URL, json={"documents": []})
+
+    await api.async_search_keyword("스타벅스")
+
+    query = aioclient_mock.mock_calls[-1][1].query
+    assert "x" not in query
+    assert "sort" not in query
 
 ORIGIN = ResolvedPoint(name="출발지", latitude=37.5663, longitude=126.9779)
 DESTINATION = ResolvedPoint(name="도착지", latitude=37.4979, longitude=127.0276)

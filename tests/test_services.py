@@ -15,6 +15,7 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 from custom_components.kakao_map.const import (
     BIKESET_ROUTE_URL,
     CARS_ROUTE_URL,
+    CATEGORY_SEARCH_URL,
     DOMAIN,
     KEYWORD_SEARCH_URL,
     PUBTRANS_ROUTE_URL,
@@ -109,6 +110,93 @@ async def test_search_place_caps_at_five_results(
         "스타벅스 3호점",
         "스타벅스 4호점",
     ]
+
+
+async def test_search_nearby_by_category(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_nearby with a category code searches around the center by distance."""
+    await _setup_integration(hass)
+    hass.states.async_set(
+        "zone.home", "zoning", {"latitude": 37.5663, "longitude": 126.9779, "friendly_name": "집"}
+    )
+    doc = {**STARBUCKS_DOC, "place_name": "GS25 시청점", "distance": "120"}
+    aioclient_mock.get(CATEGORY_SEARCH_URL, json={"documents": [doc]})
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "search_nearby",
+        {"center": "zone.home", "category": "CS2", "radius": 500},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["results"][0]["place_name"] == "GS25 시청점"
+    assert response["results"][0]["distance"] == 120
+    query = aioclient_mock.mock_calls[-1][1].query
+    assert query["category_group_code"] == "CS2"
+    assert query["x"] == "126.9779"
+    assert query["radius"] == "500"
+
+
+async def test_search_nearby_by_query(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_nearby with a keyword biases the keyword search to the center."""
+    await _setup_integration(hass)
+    nearby_doc = {**STARBUCKS_DOC, "distance": "50"}
+    aioclient_mock.get(KEYWORD_SEARCH_URL, json={"documents": [nearby_doc]})
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "search_nearby",
+        {"center": {"latitude": 37.5663, "longitude": 126.9779}, "query": "스타벅스"},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["results"][0]["place_name"] == "스타벅스 판교점"
+    assert response["results"][0]["distance"] == 50
+    query = aioclient_mock.mock_calls[-1][1].query
+    assert query["query"] == "스타벅스"
+    assert query["radius"] == "1000"  # DEFAULT_NEARBY_RADIUS
+
+
+async def test_search_nearby_requires_exactly_one_of_category_or_query(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_nearby rejects a call with neither (or both) category and query."""
+    await _setup_integration(hass)
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "search_nearby",
+            {"center": {"latitude": 37.5, "longitude": 127.0}},
+            blocking=True,
+            return_response=True,
+        )
+
+    assert err.value.translation_key == "nearby_input"
+
+
+async def test_search_nearby_no_results(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_nearby raises a validation error when nothing is found nearby."""
+    await _setup_integration(hass)
+    aioclient_mock.get(CATEGORY_SEARCH_URL, json={"documents": []})
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "search_nearby",
+            {"center": {"latitude": 37.5, "longitude": 127.0}, "category": "CE7"},
+            blocking=True,
+            return_response=True,
+        )
+
+    assert err.value.translation_key == "no_results"
 
 
 async def test_search_place_no_results(

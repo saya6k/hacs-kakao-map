@@ -27,6 +27,28 @@
         }
       }
     },
+    "search_nearby": {
+      "name": "Search nearby",
+      "description": "Searches for places of a category or keyword around a center point, returning up to 5 results ordered by distance.",
+      "fields": {
+        "center": {
+          "name": "Center",
+          "description": "The point to search around: an entity holding a location or a latitude/longitude value."
+        },
+        "category": {
+          "name": "Category",
+          "description": "A Kakao place category to search for. Provide either a category or a query, not both."
+        },
+        "query": {
+          "name": "Query",
+          "description": "A search keyword. Provide either a query or a category, not both."
+        },
+        "radius": {
+          "name": "Radius",
+          "description": "Search radius in meters (up to 20000)."
+        }
+      }
+    },
     "get_directions": {
       "name": "Get directions",
       "description": "Builds a Kakao Map route link between an origin and destination (with optional waypoints) and returns the per-leg points. Travel time is added in a later step.",
@@ -58,6 +80,28 @@
         "walk": "Walk",
         "bicycle": "Bicycle"
       }
+    },
+    "category": {
+      "options": {
+        "MT1": "Supermarket",
+        "CS2": "Convenience store",
+        "PS3": "Daycare / kindergarten",
+        "SC4": "School",
+        "AC5": "Academy",
+        "PK6": "Parking",
+        "OL7": "Gas / charging station",
+        "SW8": "Subway station",
+        "BK9": "Bank",
+        "CT1": "Cultural facility",
+        "AG2": "Real estate agency",
+        "PO3": "Public institution",
+        "AT4": "Tourist attraction",
+        "AD5": "Accommodation",
+        "FD6": "Restaurant",
+        "CE7": "Cafe",
+        "HP8": "Hospital",
+        "PM9": "Pharmacy"
+      }
     }
   },
   "exceptions": {
@@ -84,6 +128,9 @@
     },
     "too_many_waypoints": {
       "message": "Too many waypoints ({count}). Kakao Map allows at most {max}."
+    },
+    "nearby_input": {
+      "message": "Provide exactly one of category or query for the nearby search."
     }
   }
 }
