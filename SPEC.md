@@ -66,8 +66,8 @@ Home Assistant 커스텀 컴포넌트. Kakao Local REST API, 카카오맵 웹 UR
 - 설정: Config Flow (UI에서 REST API 키 입력, 키워드 검색 1회로 검증)
 - 서비스 응답: `SupportsResponse.ONLY`
 - 배포: HACS 커스텀 저장소 호환 (`hacs.json`, zip_release: false)
-- 개발환경: devcontainer (`mcr.microsoft.com/devcontainers/python:3-3.14-bookworm`,
-  ha-xbloom과 동일 패턴), Apple Container CLI로 구동
+- 개발환경: devcontainer (`mcr.microsoft.com/devcontainers/python:3-3.14-bookworm`),
+  Apple Container CLI로 구동
 
 ## Commands
 

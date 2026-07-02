@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Install Home Assistant + dev/test deps inside the devcontainer.
-# Mirrors the last-known-good pattern from ~/Projects/ha-xbloom.
 set -euxo pipefail
 
 cd "$(dirname "$0")/.."
