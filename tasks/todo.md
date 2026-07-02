@@ -13,7 +13,7 @@
 - [ ] **Checkpoint 2**: Success Criteria #2
 
 ## Phase 3: 길찾기 링크
-- [ ] T5: 위치 해석 헬퍼 (entity/coords/waypoint) — verify: test_resolve_* 통과
+- [x] T5: 위치 해석 헬퍼 (entity/coords/waypoint) — verify: test_resolve_* 통과 (순수 로직이라 T3보다 먼저 구현)
 - [ ] T6: `get_directions` 링크+legs (ETA null) — verify: 모드별 URL/legs/에러 테스트 + 링크 수동 확인
 - [ ] **Checkpoint 3**: 링크 E2E, Success Criteria #4 → 리뷰
 

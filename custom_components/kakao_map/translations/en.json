@@ -1,0 +1,22 @@
+{
+  "exceptions": {
+    "point_input_conflict": {
+      "message": "Specify either an entity or coordinates for {role}, not both."
+    },
+    "point_input_missing": {
+      "message": "Specify an entity or coordinates for {role}."
+    },
+    "entity_not_found": {
+      "message": "Entity {entity_id} was not found."
+    },
+    "entity_missing_coordinates": {
+      "message": "Entity {entity_id} has no latitude/longitude attributes."
+    },
+    "invalid_coords": {
+      "message": "Invalid coordinates for {role}: {value}. Expected [latitude, longitude]."
+    },
+    "invalid_waypoint": {
+      "message": "Invalid waypoint \"{value}\". Expected an entity ID or \"latitude,longitude\"."
+    }
+  }
+}

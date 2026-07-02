@@ -1,0 +1,22 @@
+{
+  "exceptions": {
+    "point_input_conflict": {
+      "message": "{role}에는 엔티티와 좌표 중 하나만 지정하세요."
+    },
+    "point_input_missing": {
+      "message": "{role}에 엔티티 또는 좌표를 지정하세요."
+    },
+    "entity_not_found": {
+      "message": "엔티티 {entity_id}을(를) 찾을 수 없습니다."
+    },
+    "entity_missing_coordinates": {
+      "message": "엔티티 {entity_id}에 latitude/longitude 속성이 없습니다."
+    },
+    "invalid_coords": {
+      "message": "{role} 좌표가 잘못되었습니다: {value}. [위도, 경도] 형식이어야 합니다."
+    },
+    "invalid_waypoint": {
+      "message": "경유지 \"{value}\"가 잘못되었습니다. entity ID 또는 \"위도,경도\" 형식이어야 합니다."
+    }
+  }
+}
