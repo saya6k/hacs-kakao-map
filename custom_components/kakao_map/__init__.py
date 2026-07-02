@@ -16,7 +16,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Kakao Map from a config entry."""
     session = async_get_clientsession(hass)
     api = KakaoLocalApi(session, entry.data[CONF_API_KEY])
-    route_api = KakaoMapRouteApi(session)
+    route_api = KakaoMapRouteApi(session, api)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = api
     async_setup_services(hass, api, route_api)
     return True

@@ -45,8 +45,8 @@ Home Assistant 커스텀 컴포넌트. Kakao Local REST API, 카카오맵 웹 UR
 | 모드 | 엔드포인트 | 좌표계 | 파라미터 (실측) | 응답 핵심 필드 |
 |---|---|---|---|---|
 | 자동차 | `GET map.kakao.com/route/cars.json` | **WGS84** | `origin=경도,위도,name={이름}`, `destination=〃`, `waypoints=〃\|〃`, `priority=RECOMMEND`, `roadside=true` | `[0].summary.duration`(초), `.distance`(m), `sections[]` |
-| 자전거 | `GET map.kakao.com/route/bikeset.json` | **WCONGNAMUL** | `sX,sY,eX,eY` (+경유지 `pX,pY,u2X,u2Y`) | `directions[].time`(초), `.length`(m), `sections[]` |
-| 대중교통 | `GET map.kakao.com/route/pubtrans.json` | **WCONGNAMUL** | `sX,sY,eX,eY` (경유지 불가) | `in_local.routes[].time`, `.fare`, `.transfers`, `summaries` |
+| 자전거 | `GET map.kakao.com/route/bikeset.json` | **WCONGNAMUL** | `sX,sY,eX,eY` (+경유지 `pX,pY,u2X,u2Y`) | `resultCode`, `directions[0].time`(초), `.length`(m) — 실측(T8) |
+| 대중교통 | `GET map.kakao.com/route/pubtrans.json` | **WCONGNAMUL** | `sX,sY,eX,eY` (경유지 불가) | `in_local_status`, `in_local.routes[0].{time,distance,fare}.value`(초/m/원), `.transfers`(int) — 실측(T8) |
 | 도보 | `GET map.kakao.com/route/walkset.json` | 미확정 | `sName,eName,sX,sY,eX,eY,pName,pX,pY,u2X,u2Y,ids` 전체 필요(빈 값 허용, 누락 시 302) | HTTP 200 확인, 성공 계약 미확정 — 구현 시 브라우저 devtools로 확정 |
 
 - `origin`/`destination`에 `name=` 성분 누락 시 cars.json이 ERROR 반환 — name 필수

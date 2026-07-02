@@ -21,7 +21,7 @@
 
 ## Phase 4: ETA (내부 API, best-effort)
 - [x] T7: car ETA (cars.json, waypoints 실측=Open Q4) — verify: 성공/강등 테스트 통과 (2026-07-02). 실측: 서울시청→강남 duration≈1195s, 경유지 `경도,위도,name=` `|` 연결 확정 (Open Q4 해소)
-- [ ] T8: bicycle·traffic ETA (transcoord + bikeset/pubtrans) — verify: 파이프라인 테스트 + 실측 근사
+- [x] T8: bicycle·traffic ETA (transcoord + bikeset/pubtrans) — verify: 파이프라인 테스트 통과 (2026-07-02). 실측: bike≈3531s/14.5km, transit≈2949s/49분·1650원. pubtrans는 `{value}` 중첩 필드(SPEC 표 정정). bike+경유지는 ETA null(bikeset 경유지 미모델링)
 - [ ] T9: walk ETA 조사 (walkset 계약=Open Q2, timeboxed) — verify: 연동 or 링크 전용 문서화
 - [ ] **Checkpoint 4**: 전 모드 스모크, Success Criteria #3·#5
 

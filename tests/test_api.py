@@ -4,10 +4,18 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
+from pytest_homeassistant_custom_component.test_util.aiohttp import (
+    AiohttpClientMocker,
+    AiohttpClientMockResponse,
+)
 
-from custom_components.kakao_map.api import KakaoMapRouteApi
-from custom_components.kakao_map.const import CARS_ROUTE_URL
+from custom_components.kakao_map.api import KakaoLocalApi, KakaoMapRouteApi
+from custom_components.kakao_map.const import (
+    BIKESET_ROUTE_URL,
+    CARS_ROUTE_URL,
+    PUBTRANS_ROUTE_URL,
+    TRANSCOORD_URL,
+)
 from custom_components.kakao_map.helpers import ResolvedPoint
 
 ORIGIN = ResolvedPoint(name="출발지", latitude=37.5663, longitude=126.9779)
@@ -19,8 +27,25 @@ CARS_SUCCESS = [
 ]
 
 
+# WCONGNAMUL conversions of ORIGIN and DESTINATION (from live transcoord).
+ORIGIN_WCONG = {"x": 495119, "y": 1129657}
+DEST_WCONG = {"x": 506102, "y": 1110679}
+
+
 def _route_api(hass: HomeAssistant) -> KakaoMapRouteApi:
-    return KakaoMapRouteApi(async_get_clientsession(hass))
+    local = KakaoLocalApi(async_get_clientsession(hass), "test-key")
+    return KakaoMapRouteApi(async_get_clientsession(hass), local)
+
+
+def _mock_transcoord(aioclient_mock: AiohttpClientMocker) -> None:
+    """Return WCONGNAMUL coords keyed by the WGS84 x (longitude) in the request."""
+
+    async def _side_effect(method, url, data):
+        lng = url.query["x"]
+        doc = ORIGIN_WCONG if lng == str(ORIGIN.longitude) else DEST_WCONG
+        return AiohttpClientMockResponse(method, url, json={"documents": [doc]})
+
+    aioclient_mock.get(TRANSCOORD_URL, side_effect=_side_effect)
 
 
 async def test_car_route_parses_duration_and_distance(
@@ -97,5 +122,111 @@ async def test_car_route_timeout_degrades_to_none(
     aioclient_mock.get(CARS_ROUTE_URL, exc=TimeoutError())
 
     result = await _route_api(hass).async_get_car_route(ORIGIN, DESTINATION, [])
+
+    assert result is None
+
+
+BIKE_SUCCESS = {
+    "resultCode": "SUCCESS",
+    "directions": [{"time": 3531, "length": 14479}],
+}
+PUBTRANS_SUCCESS = {
+    "in_local_status": "SUCCESS",
+    "in_local": {
+        "routes": [
+            {
+                "time": {"value": 2949},
+                "distance": {"value": 21607},
+                "fare": {"value": 1650},
+                "transfers": 1,
+            }
+        ]
+    },
+}
+
+
+async def test_transcoord_converts_wgs84_to_wcongnamul(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """transcoord returns the WCONGNAMUL x/y and sends the right params + key."""
+    aioclient_mock.get(TRANSCOORD_URL, json={"documents": [ORIGIN_WCONG]})
+    api = KakaoLocalApi(async_get_clientsession(hass), "test-key")
+
+    x, y = await api.async_transcoord(126.9779, 37.5663)
+
+    assert (x, y) == (495119, 1129657)
+    params = aioclient_mock.mock_calls[-1][1].query
+    assert params["x"] == "126.9779"
+    assert params["y"] == "37.5663"
+    assert params["input_coord"] == "WGS84"
+    assert params["output_coord"] == "WCONGNAMUL"
+    assert aioclient_mock.mock_calls[-1][3]["Authorization"] == "KakaoAK test-key"
+
+
+async def test_bike_route_transcoords_then_parses(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A bike route converts both points and reads directions[0].time/length."""
+    _mock_transcoord(aioclient_mock)
+    aioclient_mock.get(BIKESET_ROUTE_URL, json=BIKE_SUCCESS)
+
+    result = await _route_api(hass).async_get_bike_route(ORIGIN, DESTINATION)
+
+    assert result is not None
+    assert result.duration == 3531
+    assert result.distance == 14479
+    params = aioclient_mock.mock_calls[-1][1].query
+    assert (params["sX"], params["sY"]) == ("495119", "1129657")
+    assert (params["eX"], params["eY"]) == ("506102", "1110679")
+
+
+async def test_bike_route_error_result_code_degrades_to_none(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A non-SUCCESS bikeset resultCode degrades to None."""
+    _mock_transcoord(aioclient_mock)
+    aioclient_mock.get(BIKESET_ROUTE_URL, json={"resultCode": "ERROR"})
+
+    result = await _route_api(hass).async_get_bike_route(ORIGIN, DESTINATION)
+
+    assert result is None
+
+
+async def test_bike_route_transcoord_failure_degrades_to_none(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A transcoord failure degrades the whole bike lookup to None."""
+    aioclient_mock.get(TRANSCOORD_URL, status=500)
+    aioclient_mock.get(BIKESET_ROUTE_URL, json=BIKE_SUCCESS)
+
+    result = await _route_api(hass).async_get_bike_route(ORIGIN, DESTINATION)
+
+    assert result is None
+
+
+async def test_transit_route_parses_time_distance_fare_transfers(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A transit route reads the representative route's nested value fields."""
+    _mock_transcoord(aioclient_mock)
+    aioclient_mock.get(PUBTRANS_ROUTE_URL, json=PUBTRANS_SUCCESS)
+
+    result = await _route_api(hass).async_get_transit_route(ORIGIN, DESTINATION)
+
+    assert result is not None
+    assert result.duration == 2949
+    assert result.distance == 21607
+    assert result.fare == 1650
+    assert result.transfers == 1
+
+
+async def test_transit_route_error_status_degrades_to_none(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A non-SUCCESS in_local_status degrades to None."""
+    _mock_transcoord(aioclient_mock)
+    aioclient_mock.get(PUBTRANS_ROUTE_URL, json={"in_local_status": "NO_RESULT"})
+
+    result = await _route_api(hass).async_get_transit_route(ORIGIN, DESTINATION)
 
     assert result is None

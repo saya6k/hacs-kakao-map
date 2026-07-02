@@ -18,6 +18,8 @@ DIRECTIONS_LINK_BASE: Final = "https://map.kakao.com/link/by"
 # Kakao Map internal route API (undocumented; needs Referer + browser UA, no API key).
 # best-effort only: may change or block without notice, so ETA data degrades to null.
 CARS_ROUTE_URL: Final = "https://map.kakao.com/route/cars.json"
+BIKESET_ROUTE_URL: Final = "https://map.kakao.com/route/bikeset.json"
+PUBTRANS_ROUTE_URL: Final = "https://map.kakao.com/route/pubtrans.json"
 ROUTE_API_HEADERS: Final = {
     "Referer": "https://map.kakao.com/",
     "User-Agent": (

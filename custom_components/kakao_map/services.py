@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from itertools import pairwise
+from typing import Any
 
 import aiohttp
 import voluptuous as vol
@@ -18,13 +19,14 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.util import dt as dt_util
 
-from .api import KakaoApiError, KakaoLocalApi, KakaoMapRouteApi
+from .api import KakaoApiError, KakaoLocalApi, KakaoMapRouteApi, TransitResult
 from .const import (
     DIRECTIONS_LINK_BASE,
     DIRECTIONS_MODES,
     DOMAIN,
     MAP_LINK_BASE,
     MAX_WAYPOINTS,
+    MODE_BICYCLE,
     MODE_CAR,
     MODE_TRAFFIC,
 )
@@ -114,16 +116,22 @@ def async_setup_services(
         duration: int | None = None
         distance: int | None = None
         arrival_time: str | None = None
+        transit: TransitResult | None = None
         if mode == MODE_CAR:
-            result = await route_api.async_get_car_route(
-                points[0], points[-1], points[1:-1]
-            )
-            if result is not None:
-                duration = result.duration
-                distance = result.distance
-                arrival_time = (
-                    dt_util.now() + timedelta(seconds=duration)
-                ).isoformat()
+            car = await route_api.async_get_car_route(points[0], points[-1], points[1:-1])
+            if car is not None:
+                duration, distance = car.duration, car.distance
+        elif mode == MODE_BICYCLE and not waypoints:
+            # bikeset.json does not model waypoints here, so only direct routes get an ETA.
+            bike = await route_api.async_get_bike_route(points[0], points[-1])
+            if bike is not None:
+                duration, distance = bike.duration, bike.distance
+        elif mode == MODE_TRAFFIC:
+            transit = await route_api.async_get_transit_route(points[0], points[-1])
+            if transit is not None:
+                duration, distance = transit.duration, transit.distance
+        if duration is not None:
+            arrival_time = (dt_util.now() + timedelta(seconds=duration)).isoformat()
         legs = [
             {
                 "from": a.name,
@@ -135,7 +143,7 @@ def async_setup_services(
             }
             for a, b in pairwise(points)
         ]
-        return {
+        response: dict[str, Any] = {
             "route_url": f"{DIRECTIONS_LINK_BASE}/{mode}/{path}",
             "mode": mode,
             "duration": duration,
@@ -143,6 +151,10 @@ def async_setup_services(
             "arrival_time": arrival_time,
             "legs": legs,
         }
+        if transit is not None:
+            response["transfers"] = transit.transfers
+            response["fare"] = transit.fare
+        return response
 
     hass.services.async_register(
         DOMAIN,

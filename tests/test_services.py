@@ -12,7 +12,14 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.kakao_map.const import CARS_ROUTE_URL, DOMAIN, KEYWORD_SEARCH_URL
+from custom_components.kakao_map.const import (
+    BIKESET_ROUTE_URL,
+    CARS_ROUTE_URL,
+    DOMAIN,
+    KEYWORD_SEARCH_URL,
+    PUBTRANS_ROUTE_URL,
+    TRANSCOORD_URL,
+)
 from custom_components.kakao_map.helpers import (
     ResolvedPoint,
     resolve_point,
@@ -268,6 +275,7 @@ async def test_get_directions_mode_token_in_url(
     """Each travel mode produces the matching link/by/{mode} URL token."""
     await _setup_integration(hass)
     aioclient_mock.get(CARS_ROUTE_URL, status=500)
+    aioclient_mock.get(TRANSCOORD_URL, status=500)
 
     response = await hass.services.async_call(
         DOMAIN,
@@ -442,6 +450,122 @@ async def test_get_directions_car_degrades_but_keeps_link(
     assert response["route_url"] == (
         "https://map.kakao.com/link/by/car/출발지,37.5663,126.9779/도착지,37.4979,127.0276"
     )
+
+
+async def test_get_directions_bicycle_populates_eta(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A bicycle route transcoords both points and fills ETA from bikeset.json."""
+    await _setup_integration(hass)
+    aioclient_mock.get(TRANSCOORD_URL, json={"documents": [{"x": 495119, "y": 1129657}]})
+    aioclient_mock.get(
+        BIKESET_ROUTE_URL,
+        json={"resultCode": "SUCCESS", "directions": [{"time": 3531, "length": 14479}]},
+    )
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "destination": {"latitude": 37.4979, "longitude": 127.0276},
+            "mode": "bicycle",
+        },
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["duration"] == 3531
+    assert response["distance"] == 14479
+    assert response["arrival_time"] is not None
+
+
+async def test_get_directions_bicycle_with_waypoints_skips_eta(
+    hass: HomeAssistant,
+) -> None:
+    """A bicycle route with waypoints keeps the link but reports null ETA."""
+    await _setup_integration(hass)
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "waypoints": [{"latitude": 37.53, "longitude": 126.99}],
+            "destination": {"latitude": 37.4979, "longitude": 127.0276},
+            "mode": "bicycle",
+        },
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["duration"] is None
+    assert "경유지1,37.53,126.99" in response["route_url"]
+
+
+async def test_get_directions_traffic_populates_eta_with_transfers_and_fare(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A transit route fills ETA and adds transfers/fare fields from pubtrans.json."""
+    await _setup_integration(hass)
+    aioclient_mock.get(TRANSCOORD_URL, json={"documents": [{"x": 495119, "y": 1129657}]})
+    aioclient_mock.get(
+        PUBTRANS_ROUTE_URL,
+        json={
+            "in_local_status": "SUCCESS",
+            "in_local": {
+                "routes": [
+                    {
+                        "time": {"value": 2949},
+                        "distance": {"value": 21607},
+                        "fare": {"value": 1650},
+                        "transfers": 1,
+                    }
+                ]
+            },
+        },
+    )
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "destination": {"latitude": 37.4979, "longitude": 127.0276},
+            "mode": "traffic",
+        },
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["duration"] == 2949
+    assert response["distance"] == 21607
+    assert response["transfers"] == 1
+    assert response["fare"] == 1650
+
+
+async def test_get_directions_traffic_degrades_but_keeps_link(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """When transcoord fails, transit ETA is null and no transfers/fare are added."""
+    await _setup_integration(hass)
+    aioclient_mock.get(TRANSCOORD_URL, status=500)
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "destination": {"latitude": 37.4979, "longitude": 127.0276},
+            "mode": "traffic",
+        },
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["duration"] is None
+    assert "transfers" not in response
+    assert response["route_url"].startswith("https://map.kakao.com/link/by/traffic/")
 
 
 async def test_get_directions_removed_on_unload(hass: HomeAssistant) -> None:
