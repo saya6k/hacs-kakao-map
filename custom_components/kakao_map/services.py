@@ -32,22 +32,21 @@ SERVICE_SEARCH_PLACE = "search_place"
 SERVICE_GET_DIRECTIONS = "get_directions"
 
 ATTR_QUERY = "query"
-ATTR_ORIGIN_ENTITY = "origin_entity"
-ATTR_ORIGIN_LOCATION = "origin_location"
-ATTR_DESTINATION_ENTITY = "destination_entity"
-ATTR_DESTINATION_LOCATION = "destination_location"
+ATTR_ORIGIN = "origin"
+ATTR_DESTINATION = "destination"
 ATTR_WAYPOINTS = "waypoints"
 ATTR_MODE = "mode"
 
 SEARCH_PLACE_SCHEMA = vol.Schema({vol.Required(ATTR_QUERY): cv.string})
 
+# A point is an entity_id (resolved from its lat/lon attributes) or a location mapping.
+POINT_INPUT = vol.Any(cv.entity_id, dict)
+
 GET_DIRECTIONS_SCHEMA = vol.Schema(
     {
-        vol.Optional(ATTR_ORIGIN_ENTITY): cv.entity_id,
-        vol.Optional(ATTR_ORIGIN_LOCATION): dict,
-        vol.Optional(ATTR_DESTINATION_ENTITY): cv.entity_id,
-        vol.Optional(ATTR_DESTINATION_LOCATION): dict,
-        vol.Optional(ATTR_WAYPOINTS, default=list): [dict],
+        vol.Optional(ATTR_ORIGIN): POINT_INPUT,
+        vol.Optional(ATTR_DESTINATION): POINT_INPUT,
+        vol.Optional(ATTR_WAYPOINTS, default=list): [POINT_INPUT],
         vol.Optional(ATTR_MODE, default=MODE_CAR): vol.In(DIRECTIONS_MODES),
     }
 )
@@ -101,26 +100,12 @@ def async_setup_services(hass: HomeAssistant, api: KakaoLocalApi) -> None:
             raise ServiceValidationError(
                 translation_domain=DOMAIN, translation_key="traffic_no_waypoints"
             )
-        points = [
-            resolve_point(
-                hass,
-                role="출발지",
-                entity_id=call.data.get(ATTR_ORIGIN_ENTITY),
-                location=call.data.get(ATTR_ORIGIN_LOCATION),
-            )
-        ]
+        points = [resolve_point(hass, role="출발지", value=call.data.get(ATTR_ORIGIN))]
         points.extend(
-            resolve_waypoint(location, index=index)
-            for index, location in enumerate(waypoints, start=1)
+            resolve_waypoint(hass, value, index=index)
+            for index, value in enumerate(waypoints, start=1)
         )
-        points.append(
-            resolve_point(
-                hass,
-                role="도착지",
-                entity_id=call.data.get(ATTR_DESTINATION_ENTITY),
-                location=call.data.get(ATTR_DESTINATION_LOCATION),
-            )
-        )
+        points.append(resolve_point(hass, role="도착지", value=call.data.get(ATTR_DESTINATION)))
         path = "/".join(f"{p.name},{p.latitude},{p.longitude}" for p in points)
         legs = [
             {

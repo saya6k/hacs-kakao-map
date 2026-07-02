@@ -8,26 +8,18 @@ search_place:
 
 get_directions:
   fields:
-    origin_entity:
+    origin:
+      required: true
       example: person.me
       selector:
         entity:
-    origin_location:
-      example: "{latitude: 37.5665, longitude: 126.978}"
-      selector:
-        location:
-          radius: false
-    destination_entity:
-      example: zone.home
-      selector:
-        entity:
-    destination_location:
+    destination:
+      required: true
       example: "{latitude: 37.3945, longitude: 127.1112}"
       selector:
-        location:
-          radius: false
+        entity:
     waypoints:
-      example: "[{latitude: 37.39, longitude: 127.11}]"
+      example: "[zone.office, {latitude: 37.39, longitude: 127.11}]"
       selector:
         object:
     mode:

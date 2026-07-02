@@ -31,25 +31,17 @@
       "name": "Get directions",
       "description": "Builds a Kakao Map route link between an origin and destination (with optional waypoints) and returns the per-leg points. Travel time is added in a later step.",
       "fields": {
-        "origin_entity": {
-          "name": "Origin entity",
-          "description": "Entity holding the origin location (person, device_tracker, zone, ...). Use this or an origin location."
+        "origin": {
+          "name": "Origin",
+          "description": "An entity holding the origin location (person, device_tracker, zone, sensor, ...) or a {latitude, longitude} value."
         },
-        "origin_location": {
-          "name": "Origin location",
-          "description": "Origin picked on the map. Use this or an origin entity."
-        },
-        "destination_entity": {
-          "name": "Destination entity",
-          "description": "Entity holding the destination location. Use this or a destination location."
-        },
-        "destination_location": {
-          "name": "Destination location",
-          "description": "Destination picked on the map. Use this or a destination entity."
+        "destination": {
+          "name": "Destination",
+          "description": "An entity holding the destination location or a {latitude, longitude} value."
         },
         "waypoints": {
           "name": "Waypoints",
-          "description": "Up to 5 stops, each a {latitude, longitude} location. Not allowed with the public transit mode."
+          "description": "Up to 5 stops, each an entity or a {latitude, longitude} value. Not allowed with the public transit mode."
         },
         "mode": {
           "name": "Travel mode",
@@ -64,9 +56,6 @@
     },
     "api_error": {
       "message": "The Kakao API request failed. Check the log for details."
-    },
-    "point_input_conflict": {
-      "message": "Specify either an entity or coordinates for {role}, not both."
     },
     "point_input_missing": {
       "message": "Specify an entity or coordinates for {role}."

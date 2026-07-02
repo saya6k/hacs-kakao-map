@@ -144,23 +144,24 @@ map_url: https://map.kakao.com/link/map/스타벅스 판교점,37.39...,127.11..
 
 ### `kakao_map.get_directions`
 
-각 지점(출발/도착)은 **entity selector 또는 location selector(지도 선택)** 중 하나로 입력.
-둘 다 또는 둘 다 아님 → 에러.
+각 지점(출발/도착)은 **하나의 필드**로 입력하며, 값은 **위치 보유 엔티티(entity_id) 또는
+`{latitude, longitude}` 매핑** 중 하나. 엔티티/좌표를 별도 필드로 분리하지 않는다.
 
-| 필드 | selector | 필수 | 설명 |
+| 필드 | 값 | 필수 | 설명 |
 |---|---|---|---|
-| `origin_entity` | `entity` (device_tracker/person/zone 등 위치 보유 도메인) | △ | 출발지 엔티티 |
-| `origin_location` | `location`(radius 비활성) — `{latitude, longitude}` | △ | 출발지 좌표 (`origin_entity`와 택1) |
-| `destination_entity` | `entity` | △ | 도착지 엔티티 |
-| `destination_location` | `location`(radius 비활성) | △ | 도착지 좌표 (`destination_entity`와 택1) |
-| `waypoints` | list[location] | X | 경유지 최대 5개. 각 항목: `{latitude, longitude}` |
+| `origin` | entity_id 또는 `{latitude, longitude}` | O | 출발지 (위치 엔티티 또는 좌표) |
+| `destination` | entity_id 또는 `{latitude, longitude}` | O | 도착지 |
+| `waypoints` | list — 각 항목 entity_id 또는 `{latitude, longitude}` | X | 경유지 최대 5개 |
 | `mode` | select | X | `car`(기본) / `traffic` / `walk` / `bicycle` |
 
+UI selector: `origin`/`destination`은 `entity`(person/device_tracker/zone/geo_location/sensor 등
+`latitude`/`longitude` 속성 보유 엔티티), `waypoints`는 `object`. 좌표 매핑은 스키마가 함께 허용
+(`vol.Any(cv.entity_id, dict)`)하므로 YAML·템플릿으로 직접 전달 가능.
+
 **위치 해석 규칙:**
-1. `*_entity`가 entity_id → 상태의 `latitude`/`longitude` 속성 사용, 이름은 friendly_name.
+1. 값이 문자열(entity_id) → 상태의 `latitude`/`longitude` 속성 사용, 이름은 friendly_name.
    좌표 속성 없으면 `ServiceValidationError` (해당 엔티티 명시)
-2. `*_location` / waypoint 항목은 location selector 값 `{latitude, longitude}`(dict, radius는 무시) →
-   이름은 "출발지"/"도착지"/"경유지N"
+2. 값이 매핑 `{latitude, longitude}`(radius는 무시) → 좌표 사용, 이름은 "출발지"/"도착지"/"경유지N"
 3. 어느 형식도 아니면 `ServiceValidationError` (실패한 지점·값을 메시지에 명시)
 
 **검증:** `mode: traffic` + `waypoints` → 에러 (카카오맵 미지원)

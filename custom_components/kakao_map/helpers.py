@@ -1,8 +1,8 @@
-"""Resolve get_directions point inputs (entity selector or map location) to WGS84.
+"""Resolve get_directions point inputs to WGS84.
 
-Each origin/destination is either an entity holding latitude/longitude attributes
-or a location-selector value (`{"latitude": ..., "longitude": ...}`), resolved at
-call time. Waypoints are location-selector values only. Failures raise a
+Each point (origin, destination, or waypoint) is a single value that is either an
+entity_id string — resolved from the entity's latitude/longitude attributes — or a
+`{"latitude": ..., "longitude": ...}` mapping given directly. Failures raise a
 ServiceValidationError naming the exact input at fault.
 """
 
@@ -61,34 +61,24 @@ def _location_coords(location: object, *, role: str) -> tuple[float, float]:
     )
 
 
-def resolve_point(
-    hass: HomeAssistant,
-    *,
-    role: str,
-    entity_id: str | None = None,
-    location: object = None,
-) -> ResolvedPoint:
-    """Resolve one origin/destination input given as entity XOR a location value."""
-    if entity_id is not None and location is not None:
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key="point_input_conflict",
-            translation_placeholders={"role": role},
-        )
-    if entity_id is not None:
-        return _resolve_entity(hass, entity_id)
-    if location is None:
+def resolve_point(hass: HomeAssistant, *, role: str, value: object = None) -> ResolvedPoint:
+    """Resolve one origin/destination input given as an entity_id or a location mapping."""
+    if value is None:
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="point_input_missing",
             translation_placeholders={"role": role},
         )
-    latitude, longitude = _location_coords(location, role=role)
+    if isinstance(value, str):
+        return _resolve_entity(hass, value)
+    latitude, longitude = _location_coords(value, role=role)
     return ResolvedPoint(name=role, latitude=latitude, longitude=longitude)
 
 
-def resolve_waypoint(location: object, *, index: int) -> ResolvedPoint:
-    """Resolve one waypoint given as a location-selector value."""
+def resolve_waypoint(hass: HomeAssistant, value: object, *, index: int) -> ResolvedPoint:
+    """Resolve one waypoint given as an entity_id or a location mapping."""
+    if isinstance(value, str):
+        return _resolve_entity(hass, value)
     name = f"경유지{index}"
-    latitude, longitude = _location_coords(location, role=name)
+    latitude, longitude = _location_coords(value, role=name)
     return ResolvedPoint(name=name, latitude=latitude, longitude=longitude)

@@ -31,25 +31,17 @@
       "name": "길찾기",
       "description": "출발지와 도착지(선택적 경유지 포함) 사이의 카카오맵 경로 링크를 만들고 구간별 지점을 반환합니다. 소요시간은 이후 단계에서 추가됩니다.",
       "fields": {
-        "origin_entity": {
-          "name": "출발 엔티티",
-          "description": "출발지 위치를 가진 엔티티(person, device_tracker, zone 등). 출발 위치와 택1."
+        "origin": {
+          "name": "출발지",
+          "description": "출발지 위치를 가진 엔티티(person, device_tracker, zone, sensor 등) 또는 {latitude, longitude} 값."
         },
-        "origin_location": {
-          "name": "출발 위치",
-          "description": "지도에서 선택한 출발지. 출발 엔티티와 택1."
-        },
-        "destination_entity": {
-          "name": "도착 엔티티",
-          "description": "도착지 위치를 가진 엔티티. 도착 위치와 택1."
-        },
-        "destination_location": {
-          "name": "도착 위치",
-          "description": "지도에서 선택한 도착지. 도착 엔티티와 택1."
+        "destination": {
+          "name": "도착지",
+          "description": "도착지 위치를 가진 엔티티 또는 {latitude, longitude} 값."
         },
         "waypoints": {
           "name": "경유지",
-          "description": "최대 5개, 각 항목은 {latitude, longitude} 위치. 대중교통 모드에서는 사용할 수 없습니다."
+          "description": "최대 5개, 각 항목은 엔티티 또는 {latitude, longitude} 값. 대중교통 모드에서는 사용할 수 없습니다."
         },
         "mode": {
           "name": "이동 수단",
@@ -64,9 +56,6 @@
     },
     "api_error": {
       "message": "카카오 API 요청이 실패했습니다. 로그를 확인하세요."
-    },
-    "point_input_conflict": {
-      "message": "{role}에는 엔티티와 좌표 중 하나만 지정하세요."
     },
     "point_input_missing": {
       "message": "{role}에 엔티티 또는 좌표를 지정하세요."
