@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Lint and run the unit-test suite.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "── ruff ────────────────────────────────────────────"
+ruff check .
+
+echo "── pytest ──────────────────────────────────────────"
+pytest "$@"

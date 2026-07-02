@@ -4,7 +4,7 @@
 
 ## Phase 1: Foundation
 - [x] T1: 저장소 스캐폴딩 (manifest/const/hacs.json/pyproject/.gitignore, git init) — verify: manifest JSON 유효, ruff 클린
-- [ ] T2: devcontainer + scripts + 테스트 하네스 — verify: `container exec … scripts/test` 통과, HA 기동
+- [x] T2: devcontainer + scripts + 테스트 하네스 — verify: `container exec … scripts/test` 통과, HA 기동
 - [ ] T3: config flow (API 키 검증, api.py keyword 최소 구현) — verify: test_config_flow 3케이스 + 실 키 수동
 - [ ] **Checkpoint 1**: 설치·설정 가능, scripts/test 통과 → 리뷰
 

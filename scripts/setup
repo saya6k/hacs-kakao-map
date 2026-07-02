@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Install Home Assistant + dev/test deps inside the devcontainer.
+set -euxo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 -m pip install --upgrade pip wheel
+
+python3 -m pip install "ruff" "colorlog" -r tests/requirements_test.txt
+
+mkdir -p config
+if [ ! -f config/configuration.yaml ]; then
+  cat > config/configuration.yaml <<'YAML'
+homeassistant:
+  name: kakao_map Dev
+  latitude: 37.5665
+  longitude: 126.9780
+  elevation: 0
+  unit_system: metric
+  time_zone: Asia/Seoul
+
+# Slim dev setup — default_config pulls camera/usb/bluetooth deps the
+# devcontainer image can't satisfy (libturbojpeg 등 시스템 라이브러리).
+frontend:
+config:
+
+logger:
+  default: info
+  logs:
+    custom_components.kakao_map: debug
+YAML
+fi
+
+# Symlink the integration into HA's config dir so edits hot-reload.
+mkdir -p config/custom_components
+ln -sfn "$PWD/custom_components/kakao_map" config/custom_components/kakao_map
+
+echo "Setup complete."
+echo "  scripts/develop  → run HA from this checkout (port 8123)"
+echo "  scripts/test     → run ruff + pytest"
