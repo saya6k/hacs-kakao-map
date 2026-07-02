@@ -52,15 +52,14 @@ if ! command -v go2rtc >/dev/null 2>&1; then
   fi
 fi
 
+python3 -m pip install "ruff" "colorlog" -r tests/requirements_test.txt
+
 # aioesphomeapi is a transitive dep of HA's `usb` integration that HA does
 # not list in its core wheel; default_config hits a ModuleNotFoundError at
-# startup unless installed explicitly.
-python3 -m pip install \
-  "aioesphomeapi" \
-  "bleak>=2.0.0" \
-  "ruff" \
-  "colorlog" \
-  -r tests/requirements_test.txt
+# startup unless installed explicitly. Installed separately from the test
+# requirements: resolving them jointly makes pip backtrack into ancient
+# (2023) homeassistant/pytest-homeassistant-custom-component releases.
+python3 -m pip install "aioesphomeapi" "bleak>=2.0.0"
 
 mkdir -p config
 if [ ! -f config/configuration.yaml ]; then

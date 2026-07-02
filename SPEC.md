@@ -56,22 +56,24 @@ Home Assistant 커스텀 컴포넌트. Kakao Local REST API, 카카오맵 웹 UR
 
 ## Tech Stack
 
-- Python ≥ 3.13, Home Assistant ≥ 2026.4 custom component
+- Python ≥ 3.14 (HA 2026.3+가 3.14.2 요구), Home Assistant ≥ 2026.4 custom component
 - HTTP: HA 내장 `aiohttp` (`async_get_clientsession`) — 신규 런타임 의존성 없음
 - 설정: Config Flow (UI에서 REST API 키 입력, 키워드 검색 1회로 검증)
 - 서비스 응답: `SupportsResponse.ONLY`
 - 배포: HACS 커스텀 저장소 호환 (`hacs.json`, zip_release: false)
-- 개발환경: devcontainer (`mcr.microsoft.com/devcontainers/python:3-3.13-bookworm`,
-  ha-chzzk/ha-wardrowbe와 동일 패턴), Apple Container CLI로 구동
+- 개발환경: devcontainer (`mcr.microsoft.com/devcontainers/python:3-3.14-bookworm`,
+  ha-xbloom과 동일 패턴), Apple Container CLI로 구동
 
 ## Commands
 
 ```bash
 # devcontainer 기동 (Apple Container CLI — Docker 미사용)
-container run --name ha-kakao-map-dev --rm -d \
+# --rm 금지: stop 시 컨테이너(설치물 포함)가 삭제됨. 메모리 기본 1GB는
+# default_config 첫 부팅+pytest 동시 실행 시 스래싱 → 4GB 지정.
+container run --name ha-kakao-map-dev -d --memory 4g --cpus 4 \
   -v "$PWD":/workspaces/ha-kakao-map -w /workspaces/ha-kakao-map \
   -p 8123:8123 \
-  mcr.microsoft.com/devcontainers/python:3-3.13-bookworm sleep infinity
+  mcr.microsoft.com/devcontainers/python:3-3.14-bookworm sleep infinity
 
 container exec ha-kakao-map-dev scripts/setup    # HA + 테스트 의존성 설치
 container exec ha-kakao-map-dev scripts/test     # ruff + pytest

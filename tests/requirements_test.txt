@@ -4,5 +4,7 @@
 # the resolver will pick a stale version that conflicts with the HA-aligned
 # pin chosen by this package, and you'll end up with the
 # `pytest>=8 vs pytest-asyncio<8` deadlock.
-pytest-homeassistant-custom-component
-homeassistant
+# Version floors (SPEC: HA ≥ 2026.4) also stop pip from backtracking into
+# ancient releases when it hits a conflict elsewhere in the resolve.
+pytest-homeassistant-custom-component>=0.13.300
+homeassistant>=2026.4.0
