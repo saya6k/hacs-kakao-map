@@ -9,8 +9,8 @@
 - [x] **Checkpoint 1**: 설치·설정 가능, scripts/test 통과 → 리뷰 (2026-07-02 실 키 등록·오류 표시 수동 확인)
 
 ## Phase 2: 장소 검색
-- [x] T4: `search_place` 서비스 — verify: 정상/0건/API 오류 테스트 + "카카오판교아지트" 수동 (수동 검증 남음 — Checkpoint 2에서)
-- [ ] **Checkpoint 2**: Success Criteria #2
+- [x] T4: `search_place` 서비스 — verify: 정상/0건/API 오류 테스트 + "카카오판교아지트" 수동
+- [x] **Checkpoint 2**: Success Criteria #2 (2026-07-02 실 HA에서 카카오판교아지트 검색 응답 확인)
 
 ## Phase 3: 길찾기 링크
 - [x] T5: 위치 해석 헬퍼 (entity/coords/waypoint) — verify: test_resolve_* 통과 (순수 로직이라 T3보다 먼저 구현)
