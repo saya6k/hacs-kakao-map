@@ -1,0 +1,30 @@
+name: Test
+
+# Reusable: ruff lint + pytest suite. Called by ci.yml on every push/PR.
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: ruff + pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Create the Python 3.14 environment
+        run: uv venv --python 3.14
+
+      - name: Install test dependencies
+        run: uv pip install ruff -r tests/requirements_test.txt
+
+      # Call the venv binaries directly — `uv run` would treat the repo as a
+      # project and editable-install it, but this is a custom_components layout
+      # (tests import custom_components.kakao_map from the tree, not a package).
+      - name: Ruff
+        run: .venv/bin/ruff check .
+
+      - name: Pytest
+        run: .venv/bin/pytest
