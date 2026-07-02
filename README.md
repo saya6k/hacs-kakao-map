@@ -16,6 +16,7 @@ Kakao Map for Home Assistant — **place search**, **nearby search**, and **dire
 
 - **`search_place`** — keyword place search, returns the top 5 results with coordinates, addresses, and map links.
 - **`search_nearby`** — search around a center point (entity or coordinates) by Kakao category code or keyword, ordered by distance, with a `distance` field on each result.
+- **`geocode_address`** — convert an address into WGS84 coordinates, returning the best match with its jibun/road address, postal code, and a map link.
 - **`get_directions`** — Kakao Map route link + per-leg points + best-effort travel time / arrival time for car, transit, walk, and bicycle. Points are entities (person / device_tracker / zone / …) or coordinates.
 - **Korean and English** UI translations.
 
@@ -81,6 +82,18 @@ response_variable: nearby
 Categories (18 total): `cafe`, `restaurant`, `convenience_store`, `supermarket`, `hospital`, `pharmacy`, `subway_station`, `bank`, `gas_station`, `parking`, `academy`, `school`, `daycare`, `cultural_facility`, `real_estate`, `public_institution`, `tourist_attraction`, `accommodation`. In the UI these show as localized labels (카페, 음식점, …); the Kakao category codes are handled internally.
 
 For places that aren't one of the 18 group categories (e.g. a polling station / 투표소), use `query` instead. Every result carries Kakao's detailed `category_name` (e.g. `"사회,공공기관 > 행정기관 > 선거관리위원회"`) and `category_group_name`, so automations can filter on the fine-grained category.
+
+### `kakao_map.geocode_address`
+
+Convert an address into coordinates. Returns the single best match (raises an error if the address isn't found).
+
+```yaml
+action: kakao_map.geocode_address
+data:
+  query: 경기 성남시 분당구 판교역로 4
+response_variable: geo
+# geo: latitude / longitude / address(jibun) / road_address / zone_no / map_url
+```
 
 ### `kakao_map.get_directions`
 

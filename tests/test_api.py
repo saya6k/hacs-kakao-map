@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import (
 
 from custom_components.kakao_map.api import KakaoLocalApi, KakaoMapRouteApi
 from custom_components.kakao_map.const import (
+    ADDRESS_SEARCH_URL,
     BIKESET_ROUTE_URL,
     CARS_ROUTE_URL,
     CATEGORY_SEARCH_URL,
@@ -71,6 +72,21 @@ async def test_search_keyword_without_location_omits_bias(
     query = aioclient_mock.mock_calls[-1][1].query
     assert "x" not in query
     assert "sort" not in query
+
+async def test_search_address_sends_query_and_returns_documents(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Address search sends the query and returns raw documents with the API key."""
+    api = KakaoLocalApi(async_get_clientsession(hass), "test-key")
+    aioclient_mock.get(ADDRESS_SEARCH_URL, json={"documents": [{"address_name": "판교역로 4"}]})
+
+    docs = await api.async_search_address("판교역로 4")
+
+    assert docs == [{"address_name": "판교역로 4"}]
+    query = aioclient_mock.mock_calls[-1][1].query
+    assert query["query"] == "판교역로 4"
+    assert aioclient_mock.mock_calls[-1][3]["Authorization"] == "KakaoAK test-key"
+
 
 ORIGIN = ResolvedPoint(name="출발지", latitude=37.5663, longitude=126.9779)
 DESTINATION = ResolvedPoint(name="도착지", latitude=37.4979, longitude=127.0276)

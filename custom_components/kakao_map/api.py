@@ -11,6 +11,7 @@ from typing import Any
 import aiohttp
 
 from .const import (
+    ADDRESS_SEARCH_URL,
     BIKESET_ROUTE_URL,
     CARS_ROUTE_URL,
     CATEGORY_SEARCH_URL,
@@ -70,6 +71,10 @@ class KakaoLocalApi:
             if radius is not None:
                 params["radius"] = radius
         return await self._async_search(KEYWORD_SEARCH_URL, params)
+
+    async def async_search_address(self, query: str) -> list[dict[str, Any]]:
+        """Geocode an address string to WGS84 documents (address.json)."""
+        return await self._async_search(ADDRESS_SEARCH_URL, {"query": query})
 
     async def async_search_category(
         self, category_group_code: str, longitude: float, latitude: float, radius: int

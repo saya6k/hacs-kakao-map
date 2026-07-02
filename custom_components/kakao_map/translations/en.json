@@ -49,6 +49,16 @@
         }
       }
     },
+    "geocode_address": {
+      "name": "Geocode address",
+      "description": "Converts an address into WGS84 coordinates, returning the best match with its jibun/road address, postal code, and a map link.",
+      "fields": {
+        "query": {
+          "name": "Address",
+          "description": "The address to geocode, e.g. a road-name or lot-number address."
+        }
+      }
+    },
     "get_directions": {
       "name": "Get directions",
       "description": "Builds a Kakao Map route link between an origin and destination (with optional waypoints) and returns the per-leg points. Travel time is added in a later step.",

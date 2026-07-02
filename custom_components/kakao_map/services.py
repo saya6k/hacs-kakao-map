@@ -39,6 +39,7 @@ from .helpers import resolve_point, resolve_waypoint
 
 SERVICE_SEARCH_PLACE = "search_place"
 SERVICE_SEARCH_NEARBY = "search_nearby"
+SERVICE_GEOCODE_ADDRESS = "geocode_address"
 SERVICE_GET_DIRECTIONS = "get_directions"
 
 ATTR_QUERY = "query"
@@ -53,6 +54,7 @@ ATTR_MODE = "mode"
 NEARBY_CENTER_ROLE = "중심 지점"
 
 SEARCH_PLACE_SCHEMA = vol.Schema({vol.Required(ATTR_QUERY): cv.string})
+GEOCODE_ADDRESS_SCHEMA = vol.Schema({vol.Required(ATTR_QUERY): cv.string})
 
 # A point is an entity_id (resolved from its lat/lon attributes) or a location mapping.
 POINT_INPUT = vol.Any(cv.entity_id, dict)
@@ -102,6 +104,43 @@ def _place_result(doc: dict[str, Any]) -> dict[str, Any]:
     if doc.get("distance"):
         result["distance"] = int(doc["distance"])
     return result
+
+
+def _address_result(doc: dict[str, Any]) -> dict[str, Any]:
+    """Map a Kakao address document to the geocode_address response schema."""
+    address = doc["address_name"]
+    latitude = float(doc["y"])
+    longitude = float(doc["x"])
+    # road_address is null for lots that have no assigned road-name address.
+    road_address = doc.get("road_address") or {}
+    return {
+        "latitude": latitude,
+        "longitude": longitude,
+        "address": address,
+        "road_address": road_address.get("address_name"),
+        "zone_no": road_address.get("zone_no") or None,
+        "map_url": f"{MAP_LINK_BASE}/{address},{latitude},{longitude}",
+    }
+
+
+async def _async_geocode_address(
+    api: KakaoLocalApi, call: ServiceCall
+) -> ServiceResponse:
+    """Geocode an address string to the best-match coordinate result."""
+    query = call.data[ATTR_QUERY]
+    try:
+        documents = await api.async_search_address(query)
+    except (KakaoApiError, aiohttp.ClientError, TimeoutError) as err:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN, translation_key="api_error"
+        ) from err
+    if not documents:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="no_results",
+            translation_placeholders={"query": query},
+        )
+    return _address_result(documents[0])
 
 
 async def _async_search_nearby(
@@ -244,6 +283,13 @@ def async_setup_services(
     )
     hass.services.async_register(
         DOMAIN,
+        SERVICE_GEOCODE_ADDRESS,
+        partial(_async_geocode_address, api),
+        schema=GEOCODE_ADDRESS_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
         SERVICE_GET_DIRECTIONS,
         _async_get_directions,
         schema=GET_DIRECTIONS_SCHEMA,
@@ -256,4 +302,5 @@ def async_unload_services(hass: HomeAssistant) -> None:
     """Remove the kakao_map services."""
     hass.services.async_remove(DOMAIN, SERVICE_SEARCH_PLACE)
     hass.services.async_remove(DOMAIN, SERVICE_SEARCH_NEARBY)
+    hass.services.async_remove(DOMAIN, SERVICE_GEOCODE_ADDRESS)
     hass.services.async_remove(DOMAIN, SERVICE_GET_DIRECTIONS)

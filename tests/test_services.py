@@ -13,6 +13,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
 from custom_components.kakao_map.const import (
+    ADDRESS_SEARCH_URL,
     BIKESET_ROUTE_URL,
     CARS_ROUTE_URL,
     CATEGORY_SEARCH_URL,
@@ -135,6 +136,84 @@ async def test_search_results_include_kakao_category(
     result = response["results"][0]
     assert result["category_name"] == "음식점 > 카페 > 커피전문점"
     assert result["category_group_name"] == "카페"
+
+
+ADDRESS_DOC = {
+    "address_name": "경기 성남시 분당구 삼평동 681",
+    "x": "127.1112",
+    "y": "37.3945",
+    "road_address": {
+        "address_name": "경기 성남시 분당구 판교역로 4",
+        "zone_no": "13529",
+    },
+}
+
+
+async def test_geocode_address_returns_best_match(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """geocode_address returns the first document as a flat coordinate result."""
+    await _setup_integration(hass)
+    other = {**ADDRESS_DOC, "address_name": "다른 주소"}
+    aioclient_mock.get(ADDRESS_SEARCH_URL, json={"documents": [ADDRESS_DOC, other]})
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "geocode_address",
+        {"query": "판교역로 4"},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response == {
+        "latitude": 37.3945,
+        "longitude": 127.1112,
+        "address": "경기 성남시 분당구 삼평동 681",
+        "road_address": "경기 성남시 분당구 판교역로 4",
+        "zone_no": "13529",
+        "map_url": "https://map.kakao.com/link/map/경기 성남시 분당구 삼평동 681,37.3945,127.1112",
+    }
+    assert aioclient_mock.mock_calls[-1][3]["Authorization"] == "KakaoAK test-key"
+
+
+async def test_geocode_address_without_road_address(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A lot with no road address returns null road_address and zone_no."""
+    await _setup_integration(hass)
+    doc = {"address_name": "경기 성남시 분당구 삼평동 681", "x": "127.1112", "y": "37.3945"}
+    aioclient_mock.get(ADDRESS_SEARCH_URL, json={"documents": [doc]})
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "geocode_address",
+        {"query": "삼평동 681"},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["road_address"] is None
+    assert response["zone_no"] is None
+
+
+async def test_geocode_address_no_results(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """geocode_address raises a validation error when the address isn't found."""
+    await _setup_integration(hass)
+    aioclient_mock.get(ADDRESS_SEARCH_URL, json={"documents": []})
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "geocode_address",
+            {"query": "존재하지않는주소12345"},
+            blocking=True,
+            return_response=True,
+        )
+
+    assert err.value.translation_key == "no_results"
+    assert err.value.translation_placeholders == {"query": "존재하지않는주소12345"}
 
 
 async def test_search_nearby_by_category(
