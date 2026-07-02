@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.1](https://github.com/saya6k/ha-kakao-map/compare/kakao_map-v0.1.0...kakao_map-v0.1.1) (2026-07-02)
+
+
+### CI
+
+* add CI, release-please, and Zensical docs publishing (ha-xbloom parity) ([06d9e9a](https://github.com/saya6k/ha-kakao-map/commit/06d9e9a72e08ab55e1aae88086abcfd27ebf3471))
+* add placeholder brand assets for HACS validation ([74a081a](https://github.com/saya6k/ha-kakao-map/commit/74a081a8233917748e19cf7ae2f7f46c272a3252))
+
 ## [Unreleased]
 
 ### Added
