@@ -5,19 +5,24 @@
 
 # Tracked directories
 !/.devcontainer/
+!/.github/
 !/custom_components/
 !/scripts/
 !/tests/
 !/tasks/
+!/docs/
 
 # Tracked top-level files
 !/.gitignore
 !/README.md
 !/CHANGELOG.md
 !/LICENSE
+!/AGENTS.md
 !/SPEC.md
 !/hacs.json
 !/pyproject.toml
+!/zensical.en.toml
+!/zensical.ko.toml
 
 # Noise inside tracked directories
 __pycache__/
