@@ -568,6 +568,32 @@ async def test_get_directions_traffic_degrades_but_keeps_link(
     assert response["route_url"].startswith("https://map.kakao.com/link/by/traffic/")
 
 
+async def test_get_directions_walk_is_link_only(hass: HomeAssistant) -> None:
+    """Walk mode returns the link with null ETA and makes no internal API call.
+
+    walkset.json's contract is unresolved (Open Q2), so walk is intentionally
+    link-only. Registering no HTTP mock proves no route lookup is attempted.
+    """
+    await _setup_integration(hass)
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "get_directions",
+        {
+            "origin": {"latitude": 37.5663, "longitude": 126.9779},
+            "destination": {"latitude": 37.5636, "longitude": 126.9850},
+            "mode": "walk",
+        },
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response["duration"] is None
+    assert response["distance"] is None
+    assert response["arrival_time"] is None
+    assert response["route_url"].startswith("https://map.kakao.com/link/by/walk/")
+
+
 async def test_get_directions_removed_on_unload(hass: HomeAssistant) -> None:
     """Unloading the entry removes the get_directions service."""
     entry = await _setup_integration(hass)

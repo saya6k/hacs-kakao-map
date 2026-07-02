@@ -130,6 +130,8 @@ def async_setup_services(
             transit = await route_api.async_get_transit_route(points[0], points[-1])
             if transit is not None:
                 duration, distance = transit.duration, transit.distance
+        # MODE_WALK is intentionally omitted: walkset.json's contract is unresolved
+        # (Open Q2), so walk stays link-only with null ETA.
         if duration is not None:
             arrival_time = (dt_util.now() + timedelta(seconds=duration)).isoformat()
         legs = [

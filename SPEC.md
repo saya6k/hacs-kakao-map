@@ -47,7 +47,7 @@ Home Assistant 커스텀 컴포넌트. Kakao Local REST API, 카카오맵 웹 UR
 | 자동차 | `GET map.kakao.com/route/cars.json` | **WGS84** | `origin=경도,위도,name={이름}`, `destination=〃`, `waypoints=〃\|〃`, `priority=RECOMMEND`, `roadside=true` | `[0].summary.duration`(초), `.distance`(m), `sections[]` |
 | 자전거 | `GET map.kakao.com/route/bikeset.json` | **WCONGNAMUL** | `sX,sY,eX,eY` (+경유지 `pX,pY,u2X,u2Y`) | `resultCode`, `directions[0].time`(초), `.length`(m) — 실측(T8) |
 | 대중교통 | `GET map.kakao.com/route/pubtrans.json` | **WCONGNAMUL** | `sX,sY,eX,eY` (경유지 불가) | `in_local_status`, `in_local.routes[0].{time,distance,fare}.value`(초/m/원), `.transfers`(int) — 실측(T8) |
-| 도보 | `GET map.kakao.com/route/walkset.json` | 미확정 | `sName,eName,sX,sY,eX,eY,pName,pX,pY,u2X,u2Y,ids` 전체 필요(빈 값 허용, 누락 시 302) | HTTP 200 확인, 성공 계약 미확정 — 구현 시 브라우저 devtools로 확정 |
+| 도보 | `GET map.kakao.com/route/walkset.json` | — | `sName,eName,sX,sY,eX,eY,pName,pX,pY,u2X,u2Y,ids` (누락 시 302) | **계약 미해결(T9)**: 빈 `ids`로는 항상 `NO_RESULT`. walk는 링크 전용, ETA null (Open Q2 참조) |
 
 - `origin`/`destination`에 `name=` 성분 누락 시 cars.json이 ERROR 반환 — name 필수
 - **리스크**: 내부 API는 예고 없이 변경·차단될 수 있음 (과거 `carset.json` 폐기 확인).
@@ -281,8 +281,11 @@ async def async_search_keyword(self, query: str) -> list[dict[str, Any]]:
    URL 치환만으로는 타일이 어긋날 가능성이 높음. 구현 단계에서 실제 타일 URL로 검증하고,
    정렬 불가 시 보고 후 대안(네이버 타일 폴백 / 기능 제외 / 커스텀 카드) 결정.
    → 지도 교체를 마지막 태스크로 배치
-2. **walkset.json 요청 계약** — 전체 파라미터 전달 시 HTTP 200이나 유효 경로에서도 NO_RESULT.
-   구현 시 브라우저 devtools로 실제 요청 캡처해 확정. 미해결 시 walk 모드는 링크만 반환(duration null)
+2. ~~**walkset.json 요청 계약**~~ — **미해결로 확정(2026-07-02, T9 timebox)**: 전체 파라미터를
+   WGS84·WCONGNAMUL 양쪽으로, 짧은 유효 경로(~1km, ~200m)로 시도해도 항상 `resultCode: NO_RESULT`
+   (빈 `directions`), 파라미터 누락 시 302. `ids`(노드/링크 식별자)가 사실상 필수이며 사전 경로탐색
+   호출에서 얻는 값으로 추정 — 실제 브라우저 walk 요청 캡처 없이는 재현 불가. **결론: walk 모드는
+   링크 전용(duration/distance/arrival_time = null)**. 추후 캡처된 요청을 확보하면 T8과 동일 패턴으로 연동.
 3. HA 2026.x 프론트엔드 번들에 `basemaps.cartocdn.com` 문자열 패턴이 유지되는지 — 패치 구현 시 확인
 4. ~~`cars.json` 경유지(`waypoints` 파라미터) 형식~~ — **확정(2026-07-02, T7 실측)**: 경유지는
    `경도,위도,name={이름}` 형식이며 여러 개는 `|`로 연결. 단일·2개 경유지 모두 `resultCode: SUCCESS`로
