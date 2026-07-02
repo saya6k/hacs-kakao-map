@@ -16,7 +16,25 @@
       "already_configured": "Kakao Map is already configured. Only one entry is supported."
     }
   },
+  "services": {
+    "search_place": {
+      "name": "Search place",
+      "description": "Searches Kakao Map for a place by keyword and returns the top result with coordinates, addresses, and map links.",
+      "fields": {
+        "query": {
+          "name": "Query",
+          "description": "Search keyword, e.g. a place or business name."
+        }
+      }
+    }
+  },
   "exceptions": {
+    "no_results": {
+      "message": "No places found for \"{query}\"."
+    },
+    "api_error": {
+      "message": "The Kakao API request failed. Check the log for details."
+    },
     "point_input_conflict": {
       "message": "Specify either an entity or coordinates for {role}, not both."
     },

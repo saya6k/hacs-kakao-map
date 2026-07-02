@@ -9,7 +9,7 @@
 - [x] **Checkpoint 1**: 설치·설정 가능, scripts/test 통과 → 리뷰 (2026-07-02 실 키 등록·오류 표시 수동 확인)
 
 ## Phase 2: 장소 검색
-- [ ] T4: `search_place` 서비스 — verify: 정상/0건/API 오류 테스트 + "카카오판교아지트" 수동
+- [x] T4: `search_place` 서비스 — verify: 정상/0건/API 오류 테스트 + "카카오판교아지트" 수동 (수동 검증 남음 — Checkpoint 2에서)
 - [ ] **Checkpoint 2**: Success Criteria #2
 
 ## Phase 3: 길찾기 링크

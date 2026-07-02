@@ -1,16 +1,116 @@
-"""Tests for resolving get_directions point inputs (entity selector or coords)."""
+"""Tests for the kakao_map services and point-input resolution."""
 
 from __future__ import annotations
 
 import pytest
+from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ServiceValidationError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
+from custom_components.kakao_map.const import DOMAIN, KEYWORD_SEARCH_URL
 from custom_components.kakao_map.helpers import (
     ResolvedPoint,
     resolve_point,
     resolve_waypoint,
 )
+
+STARBUCKS_DOC = {
+    "place_name": "스타벅스 판교점",
+    "x": "127.1112",
+    "y": "37.3945",
+    "address_name": "경기 성남시 분당구 삼평동 681",
+    "road_address_name": "경기 성남시 분당구 판교역로 4",
+    "place_url": "http://place.map.kakao.com/26338954",
+}
+
+
+async def _setup_integration(hass: HomeAssistant) -> MockConfigEntry:
+    """Set up a kakao_map config entry so services are registered."""
+    entry = MockConfigEntry(domain=DOMAIN, data={CONF_API_KEY: "test-key"}, unique_id=DOMAIN)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    return entry
+
+
+async def test_search_place_returns_top_result(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_place returns the first document mapped to the SPEC response schema."""
+    await _setup_integration(hass)
+    other_doc = {**STARBUCKS_DOC, "place_name": "스타벅스 판교역점"}
+    aioclient_mock.get(KEYWORD_SEARCH_URL, json={"documents": [STARBUCKS_DOC, other_doc]})
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        "search_place",
+        {"query": "판교 스타벅스"},
+        blocking=True,
+        return_response=True,
+    )
+
+    assert response == {
+        "place_name": "스타벅스 판교점",
+        "latitude": 37.3945,
+        "longitude": 127.1112,
+        "address": "경기 성남시 분당구 삼평동 681",
+        "road_address": "경기 성남시 분당구 판교역로 4",
+        "place_url": "http://place.map.kakao.com/26338954",
+        "map_url": "https://map.kakao.com/link/map/스타벅스 판교점,37.3945,127.1112",
+    }
+    assert aioclient_mock.mock_calls[-1][3]["Authorization"] == "KakaoAK test-key"
+
+
+async def test_search_place_no_results(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_place raises a validation error when the search returns nothing."""
+    await _setup_integration(hass)
+    aioclient_mock.get(KEYWORD_SEARCH_URL, json={"documents": []})
+
+    with pytest.raises(ServiceValidationError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "search_place",
+            {"query": "존재하지않는장소12345"},
+            blocking=True,
+            return_response=True,
+        )
+
+    assert err.value.translation_key == "no_results"
+    assert err.value.translation_placeholders == {"query": "존재하지않는장소12345"}
+
+
+async def test_search_place_api_error(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """search_place surfaces API failures as a HomeAssistantError."""
+    await _setup_integration(hass)
+    aioclient_mock.get(KEYWORD_SEARCH_URL, status=500)
+
+    with pytest.raises(HomeAssistantError) as err:
+        await hass.services.async_call(
+            DOMAIN,
+            "search_place",
+            {"query": "판교 스타벅스"},
+            blocking=True,
+            return_response=True,
+        )
+
+    assert err.value.translation_key == "api_error"
+
+
+async def test_search_place_removed_on_unload(hass: HomeAssistant) -> None:
+    """Unloading the entry removes the search_place service."""
+    entry = await _setup_integration(hass)
+    assert hass.services.has_service(DOMAIN, "search_place")
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert not hass.services.has_service(DOMAIN, "search_place")
 
 
 async def test_resolve_entity_with_coordinates(hass: HomeAssistant) -> None:

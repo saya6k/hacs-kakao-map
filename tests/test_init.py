@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -19,7 +20,7 @@ async def test_integration_manifest_loads(hass: HomeAssistant) -> None:
 
 async def test_setup_entry_stores_domain_data(hass: HomeAssistant) -> None:
     """Setting up a config entry initializes hass.data[DOMAIN]."""
-    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry = MockConfigEntry(domain=DOMAIN, data={CONF_API_KEY: "test-key"})
     entry.add_to_hass(hass)
 
     assert await hass.config_entries.async_setup(entry.entry_id)
@@ -30,7 +31,7 @@ async def test_setup_entry_stores_domain_data(hass: HomeAssistant) -> None:
 
 async def test_unload_entry_clears_domain_data(hass: HomeAssistant) -> None:
     """Unloading a config entry removes its data from hass.data[DOMAIN]."""
-    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry = MockConfigEntry(domain=DOMAIN, data={CONF_API_KEY: "test-key"})
     entry.add_to_hass(hass)
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()

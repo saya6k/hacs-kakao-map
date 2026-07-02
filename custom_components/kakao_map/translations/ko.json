@@ -16,7 +16,25 @@
       "already_configured": "Kakao Map은 이미 설정되어 있습니다. 하나의 항목만 지원됩니다."
     }
   },
+  "services": {
+    "search_place": {
+      "name": "장소 검색",
+      "description": "키워드로 카카오맵 장소를 검색해 상위 1건의 좌표·주소·지도 링크를 반환합니다.",
+      "fields": {
+        "query": {
+          "name": "검색어",
+          "description": "검색 키워드 (예: 장소·상호명)."
+        }
+      }
+    }
+  },
   "exceptions": {
+    "no_results": {
+      "message": "\"{query}\"에 대한 장소를 찾지 못했습니다."
+    },
+    "api_error": {
+      "message": "카카오 API 요청이 실패했습니다. 로그를 확인하세요."
+    },
     "point_input_conflict": {
       "message": "{role}에는 엔티티와 좌표 중 하나만 지정하세요."
     },

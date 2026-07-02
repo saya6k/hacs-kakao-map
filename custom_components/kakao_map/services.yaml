@@ -1,0 +1,7 @@
+search_place:
+  fields:
+    query:
+      required: true
+      example: "판교 스타벅스"
+      selector:
+        text:
