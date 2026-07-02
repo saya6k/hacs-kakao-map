@@ -1,0 +1,26 @@
+name: Test
+
+# Reusable: ruff lint + pytest suite. Called by ci.yml on every push/PR.
+# yamllint disable-line rule:truthy
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: ruff + pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install test dependencies
+        run: uv pip install --system ruff -r tests/requirements_test.txt
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Pytest
+        run: pytest
