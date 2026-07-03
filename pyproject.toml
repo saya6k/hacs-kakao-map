@@ -34,6 +34,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["ANN", "PL", "S"]
+# SVG card/table builders take many independent style knobs (title, accent,
+# width, ...); a config object would add indirection without reducing them.
+"custom_components/kakao_map/llm_api/render.py" = ["PLR0913"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["custom_components.kakao_map"]

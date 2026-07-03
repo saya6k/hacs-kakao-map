@@ -8,3 +8,10 @@
 # ancient releases when it hits a conflict elsewhere in the resolve.
 pytest-homeassistant-custom-component>=0.13.300
 homeassistant>=2026.4.0
+
+# homeassistant.helpers.llm.APIInstance.async_call_tool() imports the
+# conversation component, which needs these to import at all. HA installs
+# them itself at runtime, but pip's base `homeassistant` package doesn't
+# declare them, so tests/test_llm_api.py needs them pinned here.
+hassil
+home-assistant-intents

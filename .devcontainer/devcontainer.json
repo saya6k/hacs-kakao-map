@@ -1,7 +1,7 @@
 {
-  "name": "kakao_map",
+  "name": "ha-kakao-map-dev",
   "image": "mcr.microsoft.com/devcontainers/python:3-3.14-bookworm",
-  "runArgs": ["--hostname=kakao-map-dev"],
+  "runArgs": ["--hostname=ha-kakao-map-dev"],
   "postCreateCommand": "scripts/setup",
   "forwardPorts": [8123],
   "portsAttributes": {
