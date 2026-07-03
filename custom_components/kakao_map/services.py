@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import timedelta
 from functools import partial
 from itertools import pairwise
@@ -27,7 +28,6 @@ from .const import (
     DIRECTIONS_LINK_BASE,
     DIRECTIONS_MODES,
     DOMAIN,
-    MAP_LINK_BASE,
     MAX_NEARBY_RADIUS,
     MAX_SEARCH_RESULTS,
     MAX_WAYPOINTS,
@@ -35,6 +35,7 @@ from .const import (
     MODE_CAR,
     MODE_TRAFFIC,
 )
+from .formatters import address_result, place_result
 from .helpers import resolve_point, resolve_waypoint
 
 SERVICE_SEARCH_PLACE = "search_place"
@@ -80,49 +81,6 @@ GET_DIRECTIONS_SCHEMA = vol.Schema(
 )
 
 
-def _place_result(doc: dict[str, Any]) -> dict[str, Any]:
-    """Map a Kakao search document to the SPEC response schema."""
-    name = doc["place_name"]
-    latitude = float(doc["y"])
-    longitude = float(doc["x"])
-    result = {
-        "place_name": name,
-        "latitude": latitude,
-        "longitude": longitude,
-        "address": doc["address_name"],
-        "road_address": doc["road_address_name"],
-        "place_url": doc["place_url"],
-        "map_url": f"{MAP_LINK_BASE}/{name},{latitude},{longitude}",
-    }
-    # Kakao's detailed taxonomy, present on place documents (e.g. a polling station
-    # shows up as category_name "…> 선거관리위원회" even though it has no group code).
-    if doc.get("category_name"):
-        result["category_name"] = doc["category_name"]
-    if doc.get("category_group_name"):
-        result["category_group_name"] = doc["category_group_name"]
-    # `distance` (meters from the center) is only present on nearby searches.
-    if doc.get("distance"):
-        result["distance"] = int(doc["distance"])
-    return result
-
-
-def _address_result(doc: dict[str, Any]) -> dict[str, Any]:
-    """Map a Kakao address document to the geocode_address response schema."""
-    address = doc["address_name"]
-    latitude = float(doc["y"])
-    longitude = float(doc["x"])
-    # road_address is null for lots that have no assigned road-name address.
-    road_address = doc.get("road_address") or {}
-    return {
-        "latitude": latitude,
-        "longitude": longitude,
-        "address": address,
-        "road_address": road_address.get("address_name"),
-        "zone_no": road_address.get("zone_no") or None,
-        "map_url": f"{MAP_LINK_BASE}/{address},{latitude},{longitude}",
-    }
-
-
 async def _async_geocode_address(
     api: KakaoLocalApi, call: ServiceCall
 ) -> ServiceResponse:
@@ -140,7 +98,7 @@ async def _async_geocode_address(
             translation_key="no_results",
             translation_placeholders={"query": query},
         )
-    return _address_result(documents[0])
+    return address_result(documents[0])
 
 
 async def _async_search_nearby(
@@ -174,7 +132,87 @@ async def _async_search_nearby(
             translation_key="no_results",
             translation_placeholders={"query": query or category},
         )
-    return {"results": [_place_result(doc) for doc in documents[:MAX_SEARCH_RESULTS]]}
+    return {"results": [place_result(doc) for doc in documents[:MAX_SEARCH_RESULTS]]}
+
+
+async def async_get_directions(
+    hass: HomeAssistant, route_api: KakaoMapRouteApi, data: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Resolve origin/destination/waypoints and build a directions response.
+
+    ``data`` holds ``ATTR_ORIGIN``/``ATTR_DESTINATION``/``ATTR_WAYPOINTS``/
+    ``ATTR_MODE`` (waypoints and mode must already have their defaults
+    applied). Shared by the get_directions service and the get_directions
+    LLM tool.
+    """
+    origin = data.get(ATTR_ORIGIN)
+    destination = data.get(ATTR_DESTINATION)
+    waypoints = data[ATTR_WAYPOINTS]
+    mode = data[ATTR_MODE]
+    if len(waypoints) > MAX_WAYPOINTS:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="too_many_waypoints",
+            translation_placeholders={
+                "count": str(len(waypoints)),
+                "max": str(MAX_WAYPOINTS),
+            },
+        )
+    if mode == MODE_TRAFFIC and waypoints:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN, translation_key="traffic_no_waypoints"
+        )
+    points = [resolve_point(hass, role="출발지", value=origin)]
+    points.extend(
+        resolve_waypoint(hass, value, index=index)
+        for index, value in enumerate(waypoints, start=1)
+    )
+    points.append(resolve_point(hass, role="도착지", value=destination))
+    path = "/".join(f"{p.name},{p.latitude},{p.longitude}" for p in points)
+    duration: int | None = None
+    distance: int | None = None
+    arrival_time: str | None = None
+    transit: TransitResult | None = None
+    if mode == MODE_CAR:
+        car = await route_api.async_get_car_route(points[0], points[-1], points[1:-1])
+        if car is not None:
+            duration, distance = car.duration, car.distance
+    elif mode == MODE_BICYCLE and not waypoints:
+        # bikeset.json does not model waypoints here, so only direct routes get an ETA.
+        bike = await route_api.async_get_bike_route(points[0], points[-1])
+        if bike is not None:
+            duration, distance = bike.duration, bike.distance
+    elif mode == MODE_TRAFFIC:
+        transit = await route_api.async_get_transit_route(points[0], points[-1])
+        if transit is not None:
+            duration, distance = transit.duration, transit.distance
+    # MODE_WALK is intentionally omitted: walkset.json's contract is unresolved,
+    # so walk stays link-only with null ETA.
+    if duration is not None:
+        arrival_time = (dt_util.now() + timedelta(seconds=duration)).isoformat()
+    legs = [
+        {
+            "from": a.name,
+            "from_latitude": a.latitude,
+            "from_longitude": a.longitude,
+            "to": b.name,
+            "to_latitude": b.latitude,
+            "to_longitude": b.longitude,
+        }
+        for a, b in pairwise(points)
+    ]
+    response: dict[str, Any] = {
+        "route_url": f"{DIRECTIONS_LINK_BASE}/{mode}/{path}",
+        "mode": mode,
+        "duration": duration,
+        "distance": distance,
+        "arrival_time": arrival_time,
+        "legs": legs,
+    }
+    if transit is not None:
+        response["transfers"] = transit.transfers
+        response["fare"] = transit.fare
+    return response
 
 
 @callback
@@ -197,75 +235,10 @@ def async_setup_services(
                 translation_key="no_results",
                 translation_placeholders={"query": query},
             )
-        return {"results": [_place_result(doc) for doc in documents[:MAX_SEARCH_RESULTS]]}
+        return {"results": [place_result(doc) for doc in documents[:MAX_SEARCH_RESULTS]]}
 
     async def _async_get_directions(call: ServiceCall) -> ServiceResponse:
-        mode = call.data[ATTR_MODE]
-        waypoints = call.data[ATTR_WAYPOINTS]
-        if len(waypoints) > MAX_WAYPOINTS:
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key="too_many_waypoints",
-                translation_placeholders={
-                    "count": str(len(waypoints)),
-                    "max": str(MAX_WAYPOINTS),
-                },
-            )
-        if mode == MODE_TRAFFIC and waypoints:
-            raise ServiceValidationError(
-                translation_domain=DOMAIN, translation_key="traffic_no_waypoints"
-            )
-        points = [resolve_point(hass, role="출발지", value=call.data.get(ATTR_ORIGIN))]
-        points.extend(
-            resolve_waypoint(hass, value, index=index)
-            for index, value in enumerate(waypoints, start=1)
-        )
-        points.append(resolve_point(hass, role="도착지", value=call.data.get(ATTR_DESTINATION)))
-        path = "/".join(f"{p.name},{p.latitude},{p.longitude}" for p in points)
-        duration: int | None = None
-        distance: int | None = None
-        arrival_time: str | None = None
-        transit: TransitResult | None = None
-        if mode == MODE_CAR:
-            car = await route_api.async_get_car_route(points[0], points[-1], points[1:-1])
-            if car is not None:
-                duration, distance = car.duration, car.distance
-        elif mode == MODE_BICYCLE and not waypoints:
-            # bikeset.json does not model waypoints here, so only direct routes get an ETA.
-            bike = await route_api.async_get_bike_route(points[0], points[-1])
-            if bike is not None:
-                duration, distance = bike.duration, bike.distance
-        elif mode == MODE_TRAFFIC:
-            transit = await route_api.async_get_transit_route(points[0], points[-1])
-            if transit is not None:
-                duration, distance = transit.duration, transit.distance
-        # MODE_WALK is intentionally omitted: walkset.json's contract is unresolved,
-        # so walk stays link-only with null ETA.
-        if duration is not None:
-            arrival_time = (dt_util.now() + timedelta(seconds=duration)).isoformat()
-        legs = [
-            {
-                "from": a.name,
-                "from_latitude": a.latitude,
-                "from_longitude": a.longitude,
-                "to": b.name,
-                "to_latitude": b.latitude,
-                "to_longitude": b.longitude,
-            }
-            for a, b in pairwise(points)
-        ]
-        response: dict[str, Any] = {
-            "route_url": f"{DIRECTIONS_LINK_BASE}/{mode}/{path}",
-            "mode": mode,
-            "duration": duration,
-            "distance": distance,
-            "arrival_time": arrival_time,
-            "legs": legs,
-        }
-        if transit is not None:
-            response["transfers"] = transit.transfers
-            response["fare"] = transit.fare
-        return response
+        return await async_get_directions(hass, route_api, call.data)
 
     hass.services.async_register(
         DOMAIN,

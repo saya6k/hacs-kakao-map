@@ -10,7 +10,9 @@ Kakao Map for Home Assistant — **place search**, **nearby search**, and **dire
 
 - **`search_place`** — keyword place search, returns the top 5 results with coordinates, addresses, and map links.
 - **`search_nearby`** — search around a center point (entity or coordinates) by category or keyword, ordered by distance, with a `distance` field on each result.
+- **`geocode_address`** — convert an address into WGS84 coordinates, returning the best match with its jibun/road address, postal code, and a map link.
 - **`get_directions`** — Kakao Map route link + per-leg points + best-effort travel time / arrival time for car, transit, walk, and bicycle. Points are entities (person / device_tracker / zone / …) or coordinates.
+- **Assist / AI tool support** — the same actions are exposed as an LLM tool API for AI-backed conversation agents, with visual result cards.
 - **Korean and English** UI translations.
 
 ## Installation (HACS)
@@ -74,6 +76,18 @@ Categories (18 total): `cafe`, `restaurant`, `convenience_store`, `supermarket`,
 
 For places that aren't one of the 18 group categories (e.g. a polling station / 투표소), use `query` instead. Every result carries Kakao's detailed `category_name` (e.g. `"사회,공공기관 > 행정기관 > 선거관리위원회"`) and `category_group_name`, so automations can filter on the fine-grained category.
 
+### `kakao_map.geocode_address`
+
+Convert an address into coordinates. Returns the single best match (raises an error if the address isn't found).
+
+```yaml
+action: kakao_map.geocode_address
+data:
+  query: 경기 성남시 분당구 판교역로 4
+response_variable: geo
+# geo: latitude / longitude / address(jibun) / road_address / zone_no / map_url
+```
+
 ### `kakao_map.get_directions`
 
 ```yaml
@@ -89,6 +103,10 @@ data:
 response_variable: route
 # route: route_url / mode / duration(s) / distance(m) / arrival_time / legs[]
 ```
+
+## Assist support
+
+The same four actions are also registered as an LLM tool API (`search_place`, `search_nearby`, `geocode_address`, `get_directions`), so an AI-backed Assist pipeline (e.g. Google Generative AI Conversation, OpenAI Conversation) can call them from natural language. Enable it in the conversation agent's options by selecting **Kakao Map** under the exposed LLM APIs. Place and nearby-search results also render as visual cards on cards-capable Assist surfaces (e.g. voice-satellite dashboards).
 
 ## Notes and limitations
 

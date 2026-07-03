@@ -18,6 +18,7 @@ Kakao Map for Home Assistant — **place search**, **nearby search**, and **dire
 - **`search_nearby`** — search around a center point (entity or coordinates) by Kakao category code or keyword, ordered by distance, with a `distance` field on each result.
 - **`geocode_address`** — convert an address into WGS84 coordinates, returning the best match with its jibun/road address, postal code, and a map link.
 - **`get_directions`** — Kakao Map route link + per-leg points + best-effort travel time / arrival time for car, transit, walk, and bicycle. Points are entities (person / device_tracker / zone / …) or coordinates.
+- **Assist / AI tool support** — the same actions are exposed as an LLM tool API for AI-backed conversation agents, with visual result cards.
 - **Korean and English** UI translations.
 
 ## Installation (HACS)
@@ -112,6 +113,10 @@ response_variable: route
 ```
 
 See `custom_components/kakao_map/services.yaml` for all fields.
+
+## Assist support
+
+The same four actions are also registered as an LLM tool API (`search_place`, `search_nearby`, `geocode_address`, `get_directions`), so an AI-backed Assist pipeline (e.g. Google Generative AI Conversation, OpenAI Conversation) can call them from natural language. Enable it in the conversation agent's options by selecting **Kakao Map** under the exposed LLM APIs. Place and nearby-search results also render as visual cards on cards-capable Assist surfaces (e.g. voice-satellite dashboards).
 
 ## Notes and limitations
 
