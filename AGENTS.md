@@ -88,6 +88,20 @@ Coverage lives in `tests/` (`test_api.py`, `test_services.py`, `test_config_flow
 `test_translations.py`, `test_repo_docs.py`). Mock HTTP with `aioclient_mock`. Follow TDD:
 write the failing test first, then the minimum code to pass.
 
+## Release workflow
+
+This repo (and other `ha-*` HACS components, excluding `ha-app*`) ships on a
+two-track rolling draft release, maintained by release-drafter since
+`2c068f3` (#8): a `rc` (prerelease) draft and a `stable` draft, both updated
+continuously as PRs merge to `main`.
+
+1. Verify locally with the devcontainer (`scripts/develop`) before merging —
+   see Testing above.
+2. Once merged and the `rc` draft looks right, publish it as a prerelease
+   from the GitHub Releases UI.
+3. After the prerelease has been exercised with no issues, promote/publish
+   the corresponding `stable` draft.
+
 ## When in doubt
 
 - ETA missing? That's expected on internal-API failure — confirm `route_url` still returns.
