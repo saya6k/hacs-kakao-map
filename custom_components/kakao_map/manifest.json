@@ -5,10 +5,10 @@
     "@saya6k"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/saya6k/ha-kakao-map",
+  "documentation": "https://github.com/saya6k/hacs-kakao-map",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/saya6k/ha-kakao-map/issues",
+  "issue_tracker": "https://github.com/saya6k/hacs-kakao-map/issues",
   "loggers": [
     "custom_components.kakao_map"
   ],

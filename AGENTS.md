@@ -7,7 +7,7 @@ for the integration (layout, hard rules, API facts, testing).
 ## Repository layout
 
 ```
-ha-kakao-map/
+hacs-kakao-map/
 ├── custom_components/kakao_map/   ← the HA integration (edit this)
 │   ├── __init__.py                ← setup_entry: build API clients, register services
 │   ├── config_flow.py             ← REST API key input + validation (single instance)
@@ -48,7 +48,7 @@ ha-kakao-map/
    slugs (`cafe`, `restaurant`, …) validated against `const.CATEGORY_CODES`; the handler maps
    the slug to the Kakao group code (CE7, FD6, …) before calling the API. Users never see codes.
 6. **Containers use Apple Container CLI, not Docker.** `container run/exec …`, image
-   `python:3-3.14-bookworm`, container name `ha-kakao-map-dev`. Never `docker`.
+   `python:3-3.14-bookworm`, container name `hacs-kakao-map-dev`. Never `docker`.
 
 ## API facts
 
@@ -80,8 +80,8 @@ ha-kakao-map/
 Development and tests run in the Apple Container CLI devcontainer:
 
 ```bash
-container exec ha-kakao-map-dev scripts/test      # ruff + pytest (commit gate)
-container exec ha-kakao-map-dev scripts/develop   # boots HA on :8123 for live testing
+container exec hacs-kakao-map-dev scripts/test      # ruff + pytest (commit gate)
+container exec hacs-kakao-map-dev scripts/develop   # boots HA on :8123 for live testing
 ```
 
 Coverage lives in `tests/` (`test_api.py`, `test_services.py`, `test_config_flow.py`,

@@ -1,10 +1,10 @@
 [project]
 site_name = "Kakao Map"
-site_url = "https://saya6k.github.io/ha-kakao-map/ko/"
+site_url = "https://saya6k.github.io/hacs-kakao-map/ko/"
 site_description = "Home Assistant용 카카오맵 통합 — 카카오 Local REST API와 카카오맵 웹/내부 API로 장소 검색, 주변 검색, 길찾기(링크 + best-effort 소요시간)를 제공."
 docs_dir = "docs/ko"
 site_dir = "site/ko"
-repo_url = "https://github.com/saya6k/ha-kakao-map"
+repo_url = "https://github.com/saya6k/hacs-kakao-map"
 edit_uri = "edit/main/docs/ko/"
 
 [project.theme]
@@ -12,10 +12,10 @@ language = "ko"
 
 [[project.extra.alternate]]
 name = "English"
-link = "https://saya6k.github.io/ha-kakao-map/en/"
+link = "https://saya6k.github.io/hacs-kakao-map/en/"
 lang = "en"
 
 [[project.extra.alternate]]
 name = "한국어"
-link = "https://saya6k.github.io/ha-kakao-map/ko/"
+link = "https://saya6k.github.io/hacs-kakao-map/ko/"
 lang = "ko"
