@@ -23,7 +23,7 @@ Kakao Map for Home Assistant — **place search**, **nearby search**, and **dire
 
 ## Installation (HACS)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=saya6k&repository=ha-kakao-map&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=saya6k&repository=hacs-kakao-map&category=integration)
 
 1. HACS → Integrations → ⋮ → **Custom repositories** — add this repo URL with category **Integration**.
 2. Install **Kakao Map**.
@@ -134,7 +134,7 @@ A devcontainer is provided for testing against a real Home Assistant install. Op
 scripts/develop
 ```
 
-HA binds port 8123 inside the container, whose hostname is `ha-kakao-map-dev` so it's distinguishable from any production HA on the host network. Run the lint + test suite with `scripts/test`. See `AGENTS.md` for architecture, API facts, and conventions.
+HA binds port 8123 inside the container, whose hostname is `hacs-kakao-map-dev` so it's distinguishable from any production HA on the host network. Run the lint + test suite with `scripts/test`. See `AGENTS.md` for architecture, API facts, and conventions.
 
 ## License
 
