@@ -5,9 +5,9 @@ from __future__ import annotations
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.kakao_map.const import DOMAIN
+from tests.vendor.ha_common import MockConfigEntry
 
 
 async def test_integration_manifest_loads(hass: HomeAssistant) -> None:

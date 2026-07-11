@@ -4,10 +4,6 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from pytest_homeassistant_custom_component.test_util.aiohttp import (
-    AiohttpClientMocker,
-    AiohttpClientMockResponse,
-)
 
 from custom_components.kakao_map.api import KakaoLocalApi, KakaoMapRouteApi
 from custom_components.kakao_map.const import (
@@ -20,6 +16,7 @@ from custom_components.kakao_map.const import (
     TRANSCOORD_URL,
 )
 from custom_components.kakao_map.helpers import ResolvedPoint
+from tests.vendor.aiohttp_mock import AiohttpClientMocker, AiohttpClientMockResponse
 
 
 async def test_search_category_sends_location_and_returns_documents(

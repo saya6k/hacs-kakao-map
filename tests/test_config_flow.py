@@ -7,10 +7,10 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
 from custom_components.kakao_map.const import DOMAIN, KEYWORD_SEARCH_URL
+from tests.vendor.aiohttp_mock import AiohttpClientMocker
+from tests.vendor.ha_common import MockConfigEntry
 
 
 async def test_user_flow_creates_entry(

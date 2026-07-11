@@ -9,8 +9,6 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.util import dt as dt_util
-from pytest_homeassistant_custom_component.common import MockConfigEntry
-from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
 from custom_components.kakao_map.const import (
     ADDRESS_SEARCH_URL,
@@ -27,6 +25,8 @@ from custom_components.kakao_map.helpers import (
     resolve_point,
     resolve_waypoint,
 )
+from tests.vendor.aiohttp_mock import AiohttpClientMocker
+from tests.vendor.ha_common import MockConfigEntry
 
 STARBUCKS_DOC = {
     "place_name": "스타벅스 판교점",

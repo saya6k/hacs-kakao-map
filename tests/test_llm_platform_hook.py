@@ -15,10 +15,10 @@ pytest.importorskip("homeassistant.components.llm")
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers.llm import LLMContext
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.kakao_map.const import DOMAIN
 from custom_components.kakao_map.llm import async_get_tools
+from tests.vendor.ha_common import MockConfigEntry
 
 
 def _llm_context() -> LLMContext:
