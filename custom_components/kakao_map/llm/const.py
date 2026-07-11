@@ -4,8 +4,6 @@ from __future__ import annotations
 
 SOURCE = "kakao_map"
 
-API_NAME = "Kakao Map"
-
 API_PROMPT = (
     "You can use these tools to search places and get directions in Korea via "
     "Kakao Map. Use search_place for a plain keyword search anywhere. Use "

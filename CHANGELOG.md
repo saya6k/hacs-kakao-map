@@ -15,6 +15,13 @@ All notable changes to this project are documented here. The format follows
 - Config flow: 카카오 REST API 키 입력·검증(단일 인스턴스).
 - 영어/한국어 번역.
 
+### Changed
+- LLM/Assist 도구 등록을 HA의 신규 `llm` 플랫폼 훅 아키텍처(HA 2026.8+에서 제공)로 이전. API id가
+  `kakao_map__<entry_id>`에서 안정 id `kakao_map`으로 변경 — 이미 대화 에이전트에서 Kakao Map을
+  선택해뒀다면 재선택 필요. HA 2026.8 미만에서는 설치·4개 서비스(YAML)는 그대로 동작하며
+  Assist/LLM 도구 노출만 비활성화됨(설치 자체를 막지는 않음). MCP 클라이언트는
+  `/api/mcp/kakao_map`(admin 토큰)으로 직접 접근 가능.
+
 ### Notes
 - `mode: walk`는 링크 전용(도보 내부 API 계약 미확정으로 소요시간 `null`).
 - 소요시간은 카카오맵 비공개 내부 API 기반 best-effort — 실패 시 `null` 강등, 링크는 항상 반환.

@@ -6,6 +6,12 @@ from typing import Final
 
 DOMAIN: Final = "kakao_map"
 
+# Display name for the llm.API registration. Kept here (component root) rather
+# than in llm/const.py: the API shell (llm_registration.py) must not import
+# anything from the llm/ package, or it would defeat HA's lazy platform
+# loading (see llm_registration.py's module docstring).
+API_NAME: Final = "Kakao Map"
+
 # Official Kakao Local REST API endpoints (require `Authorization: KakaoAK {key}`)
 KEYWORD_SEARCH_URL: Final = "https://dapi.kakao.com/v2/local/search/keyword.json"
 CATEGORY_SEARCH_URL: Final = "https://dapi.kakao.com/v2/local/search/category.json"

@@ -36,7 +36,10 @@ ignore = [
 "tests/**/*.py" = ["ANN", "PL", "S"]
 # SVG card/table builders take many independent style knobs (title, accent,
 # width, ...); a config object would add indirection without reducing them.
-"custom_components/kakao_map/llm_api/render.py" = ["PLR0913"]
+"custom_components/kakao_map/llm/render.py" = ["PLR0913"]
+# Vendored verbatim/near-verbatim from home-assistant/core tests/ (see
+# tests/vendor/__init__.py) — kept close to upstream style to stay diffable.
+"tests/vendor/*.py" = ["ASYNC109", "UP049"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["custom_components.kakao_map"]

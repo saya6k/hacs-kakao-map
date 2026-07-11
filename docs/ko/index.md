@@ -121,6 +121,16 @@ response_variable: route
 장소·주변 검색 결과는 카드 UI를 지원하는 Assist 화면(예: voice-satellite 대시보드)에서 시각 카드로도
 표시됩니다.
 
+**도구 노출에는 Home Assistant 2026.8 이상이 필요합니다.** 그보다 이전 버전에서도 통합은 정상
+설치되고 4개 서비스는 YAML 호출로 그대로 동작합니다 — Assist/LLM 도구 등록만 비활성화되며,
+대화 에이전트에서 Kakao Map을 선택해도 노출되는 도구가 없습니다.
+
+MCP 클라이언트는 대화 에이전트 설정과 무관하게 `/api/mcp/kakao_map`(admin 토큰 필요)로 직접
+접근할 수도 있습니다.
+
+> 이전 버전에서 업그레이드했고 이미 대화 에이전트에서 **Kakao Map**을 선택해뒀다면 다시
+> 선택해 주세요 — API의 내부 id가 안정적인 식별자로 바뀌었습니다.
+
 ## 알아두기
 
 - **소요시간은 best-effort입니다.** `duration`/`distance`/`arrival_time`은 카카오맵 비공개 내부 API를 파싱해
