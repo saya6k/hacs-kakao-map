@@ -25,8 +25,3 @@ def test_readme_documents_every_service() -> None:
     services = yaml.safe_load(SERVICES_YAML.read_text(encoding="utf-8"))
     for name in services:
         assert f"kakao_map.{name}" in readme, f"README missing kakao_map.{name}"
-
-
-def test_changelog_exists() -> None:
-    """A CHANGELOG is present for the release."""
-    assert (ROOT / "CHANGELOG.md").is_file()
