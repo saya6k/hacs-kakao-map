@@ -13,7 +13,6 @@ pytest.importorskip("homeassistant.components.llm")
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
-from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers import llm
 from homeassistant.setup import async_setup_component
 
@@ -24,7 +23,6 @@ from custom_components.kakao_map.const import (
     DOMAIN,
     KEYWORD_SEARCH_URL,
 )
-from custom_components.kakao_map.llm_registration import ISSUE_LLM_TOOLS_UNAVAILABLE
 from tests.vendor.aiohttp_mock import AiohttpClientMocker
 from tests.vendor.ha_common import MockConfigEntry
 
@@ -101,23 +99,6 @@ async def test_llm_api_unregistered_on_unload(hass: HomeAssistant) -> None:
     await hass.async_block_till_done()
 
     assert not any(a.id == DOMAIN for a in llm.async_get_apis(hass))
-
-
-async def test_llm_api_instance_clears_stale_pre_2026_8_issue(hass: HomeAssistant) -> None:
-    """A repair issue left over from a prior HA < 2026.8 run is cleared once tools work again."""
-    ir.async_create_issue(
-        hass,
-        DOMAIN,
-        ISSUE_LLM_TOOLS_UNAVAILABLE,
-        is_fixable=False,
-        severity=ir.IssueSeverity.WARNING,
-        translation_key=ISSUE_LLM_TOOLS_UNAVAILABLE,
-    )
-
-    await _setup_integration(hass)
-    await _get_api_instance(hass)
-
-    assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_LLM_TOOLS_UNAVAILABLE) is None
 
 
 async def test_search_place_tool_returns_places_and_cards(

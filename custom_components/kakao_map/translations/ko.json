@@ -114,12 +114,6 @@
       }
     }
   },
-  "issues": {
-    "llm_tools_require_2026_8": {
-      "title": "Kakao Map 도구는 Home Assistant 2026.8 이상이 필요합니다",
-      "description": "Kakao Map LLM API가 선택되어 있지만, Assist/대화 에이전트에 도구를 노출하려면 Home Assistant 2026.8 이상이 필요합니다. 4개 서비스는 그대로 정상 동작합니다. 도구를 사용하려면 Home Assistant를 업그레이드하세요."
-    }
-  },
   "exceptions": {
     "no_results": {
       "message": "\"{query}\"에 대한 장소를 찾지 못했습니다."
