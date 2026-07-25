@@ -11,9 +11,6 @@
     "error": {
       "invalid_auth": "카카오가 API 키를 거부했습니다 (HTTP 401).",
       "cannot_connect": "카카오 API에 연결할 수 없습니다. 네트워크를 확인한 뒤 다시 시도하세요."
-    },
-    "abort": {
-      "already_configured": "Kakao Map은 이미 설정되어 있습니다. 하나의 항목만 지원됩니다."
     }
   },
   "services": {

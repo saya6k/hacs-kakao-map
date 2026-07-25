@@ -28,9 +28,6 @@ class KakaoMapConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the API key form."""
-        await self.async_set_unique_id(DOMAIN)
-        self._abort_if_unique_id_configured()
-
         errors: dict[str, str] = {}
         if user_input is not None:
             api = KakaoLocalApi(async_get_clientsession(self.hass), user_input[CONF_API_KEY])
