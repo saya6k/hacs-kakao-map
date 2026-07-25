@@ -80,12 +80,12 @@ async def test_user_flow_cannot_connect(
 
 
 async def test_user_flow_aborts_when_already_configured(hass: HomeAssistant) -> None:
-    """Only a single Kakao Map entry is allowed."""
-    MockConfigEntry(domain=DOMAIN, data={CONF_API_KEY: "key"}, unique_id=DOMAIN).add_to_hass(hass)
+    """Only a single Kakao Map entry is allowed (manifest single_config_entry)."""
+    MockConfigEntry(domain=DOMAIN, data={CONF_API_KEY: "key"}).add_to_hass(hass)
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
     assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
+    assert result["reason"] == "single_instance_allowed"

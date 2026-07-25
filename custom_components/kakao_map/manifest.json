@@ -13,5 +13,6 @@
     "custom_components.kakao_map"
   ],
   "requirements": [],
+  "single_config_entry": true,
   "version": "0.0.0"
 }

@@ -11,9 +11,6 @@
     "error": {
       "invalid_auth": "The API key was rejected by Kakao (HTTP 401).",
       "cannot_connect": "Could not reach the Kakao API. Check your network and try again."
-    },
-    "abort": {
-      "already_configured": "Kakao Map is already configured. Only one entry is supported."
     }
   },
   "services": {
