@@ -12,5 +12,5 @@ tests/test_util/aiohttp.py that this repo's test suite actually needs, copied
 from a pinned `dev`-branch commit, so tests can run against a pre-release HA
 build. Delete this package and go back to importing from
 pytest_homeassistant_custom_component once it ships a release tracking
-HA > 2026.7.2.
+HA >= 2026.8.
 """
