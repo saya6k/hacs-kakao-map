@@ -1,9 +1,9 @@
 """Tests for the kakao_map `llm/` platform hook (async_get_tools).
 
-Requires HA's new `llm` platform-hook architecture (HA >= 2026.8, `dev`
-branch as of writing — see tasks/plan.md T13/T14). Skipped entirely when it
-isn't available, e.g. running the default `scripts/test` against the stable
-pin; run `scripts/test-dev` to exercise it for real.
+Requires HA's new `llm` platform-hook architecture (HA >= 2026.8 — the
+2026.8.0b0 beta as of writing; see tasks/plan.md T13/T14). Skipped entirely
+when it isn't available, e.g. running the default `scripts/test` against the
+stable pin; run `scripts/test-dev` to exercise it for real.
 """
 
 from __future__ import annotations

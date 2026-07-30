@@ -2,8 +2,9 @@
 # Wire this checkout into the devcontainer's baked-in Home Assistant install.
 #
 # The devcontainer's base image (see .devcontainer/devcontainer.json) is the
-# official homeassistant/home-assistant image, pinned to a dev-branch
-# snapshot. Unlike a generic Python devcontainer, it already bundles HA core,
+# official home-assistant image, pinned to the 2026.8.0b0 beta that hacs.json
+# declares as the floor (pulled from ghcr.io — Docker Hub carries no 2026.8
+# beta tag). Unlike a generic Python devcontainer, it already bundles HA core,
 # the frontend, and every native/runtime dependency default_config needs
 # (ffmpeg, go2rtc, PyTurboJPEG, pymicro-vad, pyspeex-noise, aioesphomeapi,
 # bleak, hassil, home-assistant-intents) — so there's nothing else to fetch
