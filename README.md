@@ -138,7 +138,7 @@ A devcontainer is provided for testing against a real Home Assistant install. Op
 scripts/develop
 ```
 
-HA binds port 8123 inside the container, whose hostname is `hacs-kakao-map-dev` so it's distinguishable from any production HA on the host network. Run the lint + test suite with `scripts/test`. See `AGENTS.md` for architecture, API facts, and conventions.
+HA binds port 8123 inside the container, whose hostname is `hacs-kakao-map-dev` so it's distinguishable from any production HA on the host network. Run the lint + test suite with `scripts/test`.
 
 ## License
 

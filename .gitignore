@@ -16,11 +16,14 @@
 !/README.md
 !/CHANGELOG.md
 !/LICENSE
-!/AGENTS.md
 !/hacs.json
 !/pyproject.toml
 !/zensical.en.toml
 !/zensical.ko.toml
+
+# Agent scaffolding (AGENTS.md and its CLAUDE.md / GEMINI.md symlink aliases,
+# .agents/, .claude/, .gemini) is local-only and deliberately not whitelisted
+# above — it stays on each developer's machine, out of the published repo.
 
 # Dev-only planning artifacts stay local and untracked (never whitelisted):
 #   SPEC.md, tasks/, plan.md, todo.md, spec/
