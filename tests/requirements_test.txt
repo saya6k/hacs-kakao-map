@@ -13,5 +13,6 @@ homeassistant>=2026.4.0
 # conversation component, which needs these to import at all. HA installs
 # them itself at runtime, but pip's base `homeassistant` package doesn't
 # declare them, so tests/test_llm_api.py needs them pinned here.
+gazetteer-matcher
 hassil
 home-assistant-intents
