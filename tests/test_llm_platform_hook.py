@@ -43,10 +43,10 @@ async def test_async_get_tools_returns_tools_for_kakao_map_api(hass: HomeAssista
 
     assert result is not None
     assert {t.name for t in result.tools} == {
-        "search_place",
-        "search_nearby",
-        "geocode_address",
-        "get_directions",
+        "kakao_map__search_place",
+        "kakao_map__search_nearby",
+        "kakao_map__geocode_address",
+        "kakao_map__get_directions",
     }
     assert result.prompt
 

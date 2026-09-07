@@ -81,10 +81,10 @@ async def test_llm_api_instance_has_four_tools_plus_get_date_time(hass: HomeAssi
     instance = await _get_api_instance(hass)
 
     assert {t.name for t in instance.tools} == {
-        "search_place",
-        "search_nearby",
-        "geocode_address",
-        "get_directions",
+        "kakao_map__search_place",
+        "kakao_map__search_nearby",
+        "kakao_map__geocode_address",
+        "kakao_map__get_directions",
         "llm__GetDateTime",
     }
     assert instance.api_prompt
@@ -110,7 +110,7 @@ async def test_search_place_tool_returns_places_and_cards(
     instance = await _get_api_instance(hass)
 
     result = await instance.async_call_tool(
-        llm.ToolInput(tool_name="search_place", tool_args={"query": "판교 스타벅스"})
+        llm.ToolInput(tool_name="kakao_map__search_place", tool_args={"query": "판교 스타벅스"})
     )
 
     assert result["source"] == "kakao_map"
@@ -130,7 +130,9 @@ async def test_search_place_tool_no_results(
 
     with pytest.raises(ServiceValidationError) as err:
         await instance.async_call_tool(
-            llm.ToolInput(tool_name="search_place", tool_args={"query": "존재하지않는장소"})
+            llm.ToolInput(
+                tool_name="kakao_map__search_place", tool_args={"query": "존재하지않는장소"}
+            )
         )
 
     assert err.value.translation_key == "no_results"
@@ -150,7 +152,7 @@ async def test_search_nearby_tool_by_category(
 
     result = await instance.async_call_tool(
         llm.ToolInput(
-            tool_name="search_nearby",
+            tool_name="kakao_map__search_nearby",
             tool_args={"center": "zone.home", "category": "convenience_store", "radius": 500},
         )
     )
@@ -170,7 +172,7 @@ async def test_search_nearby_tool_requires_exactly_one_of_category_or_query(
     with pytest.raises(ServiceValidationError) as err:
         await instance.async_call_tool(
             llm.ToolInput(
-                tool_name="search_nearby",
+                tool_name="kakao_map__search_nearby",
                 tool_args={"center": {"latitude": 37.5, "longitude": 127.0}},
             )
         )
@@ -187,7 +189,7 @@ async def test_geocode_address_tool_returns_result_and_card(
     instance = await _get_api_instance(hass)
 
     result = await instance.async_call_tool(
-        llm.ToolInput(tool_name="geocode_address", tool_args={"query": "판교역로 4"})
+        llm.ToolInput(tool_name="kakao_map__geocode_address", tool_args={"query": "판교역로 4"})
     )
 
     assert result["latitude"] == 37.3945
@@ -205,7 +207,7 @@ async def test_get_directions_tool_builds_route(
 
     result = await instance.async_call_tool(
         llm.ToolInput(
-            tool_name="get_directions",
+            tool_name="kakao_map__get_directions",
             tool_args={
                 "origin": {"latitude": 37.5, "longitude": 127.0},
                 "destination": {"latitude": 37.4, "longitude": 127.1},
@@ -228,7 +230,7 @@ async def test_get_directions_tool_rejects_too_many_waypoints(hass: HomeAssistan
     with pytest.raises(ServiceValidationError) as err:
         await instance.async_call_tool(
             llm.ToolInput(
-                tool_name="get_directions",
+                tool_name="kakao_map__get_directions",
                 tool_args={
                     "origin": {"latitude": 37.5, "longitude": 127.0},
                     "destination": {"latitude": 37.4, "longitude": 127.1},

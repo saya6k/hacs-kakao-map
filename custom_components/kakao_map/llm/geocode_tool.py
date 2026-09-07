@@ -24,7 +24,7 @@ _GEOCODE_ACCENT = "#a855f7"  # purple-500
 class GeocodeAddressTool(BaseKakaoTool):
     """Convert an address string to WGS84 coordinates."""
 
-    name = "geocode_address"
+    name = "kakao_map__geocode_address"
     description = (
         "Convert a Korean address string to WGS84 coordinates, returning "
         "the best-match result's lot/road address, postal code, and a map "

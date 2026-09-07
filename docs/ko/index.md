@@ -115,7 +115,7 @@ response_variable: route
 
 ## Assist(AI) 지원
 
-동일한 4개 액션이 LLM 툴 API(`search_place`, `search_nearby`, `geocode_address`, `get_directions`)로도
+동일한 4개 액션이 LLM 툴 API(`kakao_map__search_place`, `kakao_map__search_nearby`, `kakao_map__geocode_address`, `kakao_map__get_directions`)로도
 등록되어 있어, AI 기반 Assist 파이프라인(예: Google Generative AI Conversation, OpenAI Conversation)이
 자연어로 호출할 수 있습니다. 대화 에이전트 옵션에서 노출할 LLM API로 **Kakao Map**을 선택하면 활성화됩니다.
 장소·주변 검색 결과는 카드 UI를 지원하는 Assist 화면(예: voice-satellite 대시보드)에서 시각 카드로도
