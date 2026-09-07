@@ -85,7 +85,7 @@ async def test_llm_api_instance_has_four_tools_plus_get_date_time(hass: HomeAssi
         "search_nearby",
         "geocode_address",
         "get_directions",
-        "GetDateTime",
+        "llm__GetDateTime",
     }
     assert instance.api_prompt
 

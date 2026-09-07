@@ -10,6 +10,7 @@ import pytest
 from aiohttp.resolver import AsyncResolver
 from homeassistant import loader
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import frame
 
 from tests.vendor.aiohttp_mock import AiohttpClientMocker, mock_aiohttp_client
 from tests.vendor.ha_common import async_test_home_assistant
@@ -31,8 +32,12 @@ async def hass(tmp_path) -> AsyncGenerator[HomeAssistant]:
     async with async_test_home_assistant(
         asyncio.get_running_loop(), config_dir=str(tmp_path)
     ) as test_hass:
+        # HA core's own `hass` fixture does this; without it any `frame.report_usage`
+        # call reached during a test raises RuntimeError("Frame helper not set up").
+        frame.async_setup(test_hass)
         yield test_hass
         await test_hass.async_stop(force=True)
+        frame.async_setup(None)
 
 
 @pytest.fixture
