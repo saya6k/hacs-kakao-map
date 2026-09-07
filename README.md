@@ -116,7 +116,7 @@ See `custom_components/kakao_map/services.yaml` for all fields.
 
 ## Assist support
 
-The same four actions are also registered as an LLM tool API (`search_place`, `search_nearby`, `geocode_address`, `get_directions`), so an AI-backed Assist pipeline (e.g. Google Generative AI Conversation, OpenAI Conversation) can call them from natural language. Enable it in the conversation agent's options by selecting **Kakao Map** under the exposed LLM APIs. Place and nearby-search results also render as visual cards on cards-capable Assist surfaces (e.g. voice-satellite dashboards).
+The same four actions are also registered as an LLM tool API (`kakao_map__search_place`, `kakao_map__search_nearby`, `kakao_map__geocode_address`, `kakao_map__get_directions`), so an AI-backed Assist pipeline (e.g. Google Generative AI Conversation, OpenAI Conversation) can call them from natural language. Enable it in the conversation agent's options by selecting **Kakao Map** under the exposed LLM APIs. Place and nearby-search results also render as visual cards on cards-capable Assist surfaces (e.g. voice-satellite dashboards).
 
 MCP clients can also reach the API directly at `/api/mcp/kakao_map` (requires an admin-scoped token), independent of any conversation agent's configured API list.
 

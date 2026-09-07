@@ -49,7 +49,7 @@ def _place_card_items(
 class SearchPlaceTool(BaseKakaoTool):
     """Keyword search anywhere on Kakao Map (not centered on a point)."""
 
-    name = "search_place"
+    name = "kakao_map__search_place"
     description = (
         "Search Kakao Map for places by keyword, anywhere (not centered on a "
         "point). Returns up to 5 matches with coordinates, address, and a "
@@ -91,7 +91,7 @@ class SearchPlaceTool(BaseKakaoTool):
 class SearchNearbyTool(BaseKakaoTool):
     """Category or keyword search within a radius of a center point."""
 
-    name = "search_nearby"
+    name = "kakao_map__search_nearby"
     description = (
         "Search Kakao Map for places of a category or keyword within a "
         "radius of a center point (an entity_id like a zone/person/"

@@ -24,7 +24,7 @@ from .schema import POINT_INPUT
 class GetDirectionsTool(BaseKakaoTool):
     """Build a Kakao Map route between two points, with optional waypoints."""
 
-    name = "get_directions"
+    name = "kakao_map__get_directions"
     description = (
         "Get a Kakao Map route between an origin and destination (each an "
         "entity_id or a latitude/longitude), with optional ordered "
