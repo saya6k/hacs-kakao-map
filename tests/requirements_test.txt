@@ -1,18 +1,10 @@
-# pytest-homeassistant-custom-component pulls in pytest, pytest-asyncio,
-# and the rest of the test toolchain at the exact versions Home Assistant
-# core uses. Don't add separate pins for pytest / pytest-asyncio here —
-# the resolver will pick a stale version that conflicts with the HA-aligned
-# pin chosen by this package, and you'll end up with the
-# `pytest>=8 vs pytest-asyncio<8` deadlock.
-# Version floors (SPEC: HA ≥ 2026.4) also stop pip from backtracking into
-# ancient releases when it hits a conflict elsewhere in the resolve.
-pytest-homeassistant-custom-component>=0.13.300
-homeassistant>=2026.4.0
+# Tests use the vendored HA harness in tests/vendor/. Installing phacc would
+# pin an older HA and conflict with the integration's ToolResult minimum.
+homeassistant>=2026.10.0b0
+pytest>=9.0
+pytest-asyncio>=1.4
 
-# homeassistant.helpers.llm.APIInstance.async_call_tool() imports the
-# conversation component, which needs these to import at all. HA installs
-# them itself at runtime, but pip's base `homeassistant` package doesn't
-# declare them, so tests/test_llm_api.py needs them pinned here.
+# Runtime dependencies imported by HA's conversation component.
 gazetteer-matcher
 hassil
 home-assistant-intents

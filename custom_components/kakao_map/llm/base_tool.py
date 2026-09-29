@@ -16,6 +16,11 @@ from .const import SOURCE
 class BaseKakaoTool(llm.Tool):
     """Reads its bound config entry's API clients via hass.data."""
 
+    integration = DOMAIN
+    annotations = llm.ToolAnnotations(
+        read_only=True, destructive=False, idempotent=True, open_world=True
+    )
+
     def __init__(self, hass: HomeAssistant, entry_id: str) -> None:
         super().__init__()
         self.hass = hass
@@ -23,9 +28,7 @@ class BaseKakaoTool(llm.Tool):
 
     @property
     def store(self) -> dict[str, Any]:
-        return cast(
-            "dict[str, Any]", self.hass.data.get(DOMAIN, {}).get(self.entry_id, {})
-        )
+        return cast("dict[str, Any]", self.hass.data.get(DOMAIN, {}).get(self.entry_id, {}))
 
     @property
     def api(self) -> KakaoLocalApi:
@@ -35,8 +38,8 @@ class BaseKakaoTool(llm.Tool):
     def route_api(self) -> KakaoMapRouteApi:
         return cast(KakaoMapRouteApi, self.store["route_api"])
 
-    def envelope(self, **fields: Any) -> dict[str, Any]:
+    def envelope(self, **fields: Any) -> llm.ToolResult:
         """Build a standard response envelope."""
         out: dict[str, Any] = {"source": SOURCE}
         out.update(fields)
-        return out
+        return llm.ToolResult(data=out)

@@ -50,6 +50,7 @@ class SearchPlaceTool(BaseKakaoTool):
     """Keyword search anywhere on Kakao Map (not centered on a point)."""
 
     name = "kakao_map__search_place"
+    title = "Search place"
     description = (
         "Search Kakao Map for places by keyword, anywhere (not centered on a "
         "point). Returns up to 5 matches with coordinates, address, and a "
@@ -62,7 +63,7 @@ class SearchPlaceTool(BaseKakaoTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         query = tool_input.tool_args["query"]
         try:
             documents = await self.api.async_search_keyword(query)
@@ -92,6 +93,7 @@ class SearchNearbyTool(BaseKakaoTool):
     """Category or keyword search within a radius of a center point."""
 
     name = "kakao_map__search_nearby"
+    title = "Search nearby"
     description = (
         "Search Kakao Map for places of a category or keyword within a "
         "radius of a center point (an entity_id like a zone/person/"
@@ -114,7 +116,7 @@ class SearchNearbyTool(BaseKakaoTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         args = tool_input.tool_args
         category = args.get("category")
         query = args.get("query")

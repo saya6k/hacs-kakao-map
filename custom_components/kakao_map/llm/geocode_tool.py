@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import aiohttp
 import voluptuous as vol
 from homeassistant.core import HomeAssistant
@@ -25,6 +23,7 @@ class GeocodeAddressTool(BaseKakaoTool):
     """Convert an address string to WGS84 coordinates."""
 
     name = "kakao_map__geocode_address"
+    title = "Geocode address"
     description = (
         "Convert a Korean address string to WGS84 coordinates, returning "
         "the best-match result's lot/road address, postal code, and a map "
@@ -37,7 +36,7 @@ class GeocodeAddressTool(BaseKakaoTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         query = tool_input.tool_args["query"]
         try:
             documents = await self.api.async_search_address(query)
