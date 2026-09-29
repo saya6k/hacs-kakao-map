@@ -1,6 +1,6 @@
 # Kakao Map — Home Assistant Integration
 
-> Requires Home Assistant **2026.10.0b0 or later**. LLM tools return `llm.ToolResult`, preserving existing response fields in `data`.
+> Requires Home Assistant **2026.10.0.dev202609290227 or later**. LLM tools return `llm.ToolResult`, preserving existing response fields in `data`.
 
 > Source of truth — see [한국어](../ko/index.md) for the Korean translation (may lag).
 

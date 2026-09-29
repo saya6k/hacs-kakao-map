@@ -1,6 +1,6 @@
 # Tests use the vendored HA harness in tests/vendor/. Installing phacc would
 # pin an older HA and conflict with the integration's ToolResult minimum.
-homeassistant>=2026.10.0b0
+homeassistant>=2026.10.0.dev202609290227
 pytest>=9.0
 pytest-asyncio>=1.4
 
