@@ -109,15 +109,20 @@ async def test_search_place_tool_returns_places_and_cards(
     aioclient_mock.get(KEYWORD_SEARCH_URL, json={"documents": [STARBUCKS_DOC]})
     instance = await _get_api_instance(hass)
 
-    result = await instance.async_call_tool(
-        llm.ToolInput(tool_name="kakao_map__search_place", tool_args={"query": "판교 스타벅스"})
+    tool = next(tool for tool in instance.tools if tool.name == "kakao_map__search_place")
+    result = await tool.async_call(
+        hass,
+        llm.ToolInput(tool_name=tool.name, tool_args={"query": "판교 스타벅스"}),
+        _llm_context(),
     )
 
-    assert result["source"] == "kakao_map"
-    assert result["places"][0]["place_name"] == "스타벅스 판교점"
-    assert len(result["results"]) == 1
-    assert result["results"][0]["title"] == "스타벅스 판교점"
-    assert result["results"][0]["image_url"].startswith("data:image/svg+xml;base64,")
+    assert isinstance(result, llm.ToolResult)
+    assert not result.error
+    assert result.data["source"] == "kakao_map"
+    assert result.data["places"][0]["place_name"] == "스타벅스 판교점"
+    assert len(result.data["results"]) == 1
+    assert result.data["results"][0]["title"] == "스타벅스 판교점"
+    assert result.data["results"][0]["image_url"].startswith("data:image/svg+xml;base64,")
 
 
 async def test_search_place_tool_no_results(
@@ -157,9 +162,9 @@ async def test_search_nearby_tool_by_category(
         )
     )
 
-    assert result["places"][0]["place_name"] == "GS25 시청점"
-    assert result["places"][0]["distance"] == 120
-    assert result["center"]["name"] == "집"
+    assert result.data["places"][0]["place_name"] == "GS25 시청점"
+    assert result.data["places"][0]["distance"] == 120
+    assert result.data["center"]["name"] == "집"
 
 
 async def test_search_nearby_tool_requires_exactly_one_of_category_or_query(
@@ -192,9 +197,9 @@ async def test_geocode_address_tool_returns_result_and_card(
         llm.ToolInput(tool_name="kakao_map__geocode_address", tool_args={"query": "판교역로 4"})
     )
 
-    assert result["latitude"] == 37.3945
-    assert result["road_address"] == "경기 성남시 분당구 판교역로 4"
-    assert result["featured_image"].startswith("data:image/svg+xml;base64,")
+    assert result.data["latitude"] == 37.3945
+    assert result.data["road_address"] == "경기 성남시 분당구 판교역로 4"
+    assert result.data["featured_image"].startswith("data:image/svg+xml;base64,")
 
 
 async def test_get_directions_tool_builds_route(
@@ -215,9 +220,9 @@ async def test_get_directions_tool_builds_route(
         )
     )
 
-    assert result["mode"] == "car"
-    assert result["duration"] is None
-    assert result["route_url"] == (
+    assert result.data["mode"] == "car"
+    assert result.data["duration"] is None
+    assert result.data["route_url"] == (
         "https://map.kakao.com/link/by/car/출발지,37.5,127.0/도착지,37.4,127.1"
     )
 
@@ -240,3 +245,16 @@ async def test_get_directions_tool_rejects_too_many_waypoints(hass: HomeAssistan
         )
 
     assert err.value.translation_key == "too_many_waypoints"
+
+
+async def test_tools_declare_external_read_only_metadata(hass: HomeAssistant) -> None:
+    await _setup_integration(hass)
+    instance = await _get_api_instance(hass)
+    for tool in instance.tools:
+        if not tool.name.startswith("kakao_map__"):
+            continue
+        assert tool.integration == DOMAIN
+        assert tool.title
+        assert tool.annotations == llm.ToolAnnotations(
+            read_only=True, destructive=False, idempotent=True, open_world=True
+        )

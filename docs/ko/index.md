@@ -1,5 +1,7 @@
 # 카카오맵 — Home Assistant 통합
 
+> Home Assistant **2026.10.0.dev202609290227 이상**이 필요합니다. LLM 도구는 `llm.ToolResult`를 반환하며 기존 응답 필드는 `data`에 유지됩니다.
+
 > 영어 문서가 원본입니다 — [English](../en/index.md).
 
 카카오 Local REST API와 카카오맵 웹/내부 API로 **장소 검색**, **주변 검색**, **길찾기**(카카오맵 링크 +

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import llm
@@ -25,6 +23,7 @@ class GetDirectionsTool(BaseKakaoTool):
     """Build a Kakao Map route between two points, with optional waypoints."""
 
     name = "kakao_map__get_directions"
+    title = "Get directions"
     description = (
         "Get a Kakao Map route between an origin and destination (each an "
         "entity_id or a latitude/longitude), with optional ordered "
@@ -46,7 +45,7 @@ class GetDirectionsTool(BaseKakaoTool):
         hass: HomeAssistant,
         tool_input: llm.ToolInput,
         llm_context: llm.LLMContext,
-    ) -> dict[str, Any]:
+    ) -> llm.ToolResult:
         args = tool_input.tool_args
         data = {
             ATTR_ORIGIN: args.get("origin"),
