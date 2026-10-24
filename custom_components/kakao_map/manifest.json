@@ -1,6 +1,9 @@
 {
   "domain": "kakao_map",
   "name": "Kakao Map",
+  "categories": [
+    "vehicles_transport"
+  ],
   "codeowners": [
     "@saya6k"
   ],
