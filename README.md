@@ -1,5 +1,8 @@
 # Kakao Map — Home Assistant Integration
 
+> [!WARNING]
+> **This integration is retired and no longer maintained.** Use **[Naver Map for Home Assistant (hacs-naver-map)](https://github.com/saya6k/hacs-naver-map)** instead — it covers the same place search, nearby search, geocoding, and directions, plus place details, realtime transit arrivals, and a route panel. This repository is archived; no further releases or fixes will be made.
+
 > Requires Home Assistant **2026.10.0.dev202609290227** or later.
 
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with%20Claude%20Code-D97757?style=for-the-badge&logo=claude&logoColor=white)](https://claude.ai/code)

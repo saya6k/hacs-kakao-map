@@ -1,5 +1,7 @@
 # 카카오맵 — Home Assistant 통합
 
+> **이 통합은 은퇴했으며 더 이상 유지보수하지 않습니다.** 대신 **[네이버 지도 Home Assistant 통합 (hacs-naver-map)](https://github.com/saya6k/hacs-naver-map)**을 사용하세요 — 같은 장소 검색·주변 검색·지오코딩·길찾기에 더해 장소 상세, 실시간 대중교통 도착 정보, 경로 패널을 제공합니다. 이 저장소는 보관(archive)되었으며 추가 릴리스나 수정은 없습니다.
+
 > Home Assistant **2026.10.0.dev202609290227** 이상이 필요합니다.
 
 > 영어 문서가 원본입니다 — [English](../en/index.md).
